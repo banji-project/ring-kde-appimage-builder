@@ -1,0 +1,19 @@
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 7e92698..548a228 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -4,7 +4,13 @@ project(knotifytest)
+ 
+ include(ECMMarkAsTest)
+ 
+-find_package(Qt5Test ${REQUIRED_QT_VERSION} REQUIRED)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
++
+ set_package_properties(Qt5Test PROPERTIES PURPOSE "Required for tests")
+ 
+ find_package(KF5ConfigWidgets ${KF5_DEP_VERSION} REQUIRED)

@@ -1,0 +1,36 @@
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index d4cbd45..4ac8f95 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -4,7 +4,12 @@ include(ECMAddTests)
+ 
+ ########### unittests ###############
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Concurrent Test)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ macro(KSERVICE_UNIT_TESTS)
+   foreach(_testname ${ARGN})
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 1643750..995dfbd 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -5,7 +5,12 @@ add_subdirectory(pluginlocator)
+ 
+ include(ECMMarkAsTest)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ macro(kservice_executable_tests)
+   foreach(_testname ${ARGN})

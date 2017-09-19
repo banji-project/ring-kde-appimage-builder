@@ -1,0 +1,20 @@
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index ef6f903..d695fbe 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -2,7 +2,14 @@ remove_definitions(-DQT_NO_CAST_FROM_ASCII)
+ 
+ include(ECMAddTests)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test Qml Concurrent)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
++
++find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Qml Concurrent)
+ 
+ ecm_add_test(ki18ndeclarativetest.cpp
+     TEST_NAME "ki18n-declarativetest"

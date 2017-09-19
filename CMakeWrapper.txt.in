@@ -1,0 +1,34 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+
+PROJECT(dummy)
+
+SET(QT_MIN_VERSION  "5.7.0")
+set(CMAKE_BUILD_TYPE DEBUG)
+
+ADD_DEFINITIONS(-DQT_STATIC)
+
+# The parent script will add many paths here
+@ALL_KF5_DIR@
+
+#QTBUG-38913
+# All static linking elements have to be added "by force" as the package
+# provides an incomplete list.
+set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lpthread @EXTRA_LD@"
+)
+
+set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lpthread @EXTRA_LD@"
+)
+
+set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lpthread @EXTRA_LD@"
+)
+
+# Make sure KF5 subdirectory see each others
+
+set(BUILD_WITH_QTSCRIPT OFF)
+option(BUILD_WITH_QTSCRIPT OFF)
+
+add_subdirectory(@SUB_DIR_NAME@)
+

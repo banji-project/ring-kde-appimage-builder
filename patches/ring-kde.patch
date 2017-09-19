@@ -1,0 +1,43 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 933e4ae..6e32bf0 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -43,7 +43,7 @@ ENDIF()
+ IF(NOT ringclient_FOUND)
+    INCLUDE(cmake/FetchRing-LRC.cmake)
+ 
+-   SET(LibRingClient_SRC ${CMAKE_CURRENT_BINARY_DIR}/ring-lrc/)
++   SET(LibRingClient_SRC ${CMAKE_CURRENT_SOURCE_DIR}/ring-lrc/)
+ ENDIF()
+ 
+ # Use the build-in copy if it has been found
+@@ -53,7 +53,7 @@ IF(LibRingClient_SRC)
+ 
+    LIST(APPEND CMAKE_MODULE_PATH "${LibRingClient_SRC}/cmake/")
+ 
+-   ADD_SUBDIRECTORY(${LibRingClient_SRC})
++   ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/ring-lrc)
+ 
+    INCLUDE_DIRECTORIES(${LibRingClient_SRC}/src)
+ ENDIF()
+diff --git a/cmake/FetchRing-LRC.cmake b/cmake/FetchRing-LRC.cmake
+index 911e73c..dc43ae4 100644
+--- a/cmake/FetchRing-LRC.cmake
++++ b/cmake/FetchRing-LRC.cmake
+@@ -57,13 +57,13 @@ endif()
+ 
+ message(STATUS "Fetching Ring-LRC from GitHub")
+ 
+-if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/ring-lrc)
++if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-lrc)
+     execute_process(COMMAND
+-        git clone https://github.com/Elv13/ring-lrc.git --branch master ${CMAKE_CURRENT_BINARY_DIR}/ring-lrc
++        git clone https://github.com/Elv13/ring-lrc.git --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-lrc
+     )
+ else()
+     execute_process(COMMAND
+-        /bin/sh -c "cd ${CMAKE_CURRENT_BINARY_DIR}/ring-lrc && git fetch origin && git reset --hard origin/master"
++        /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-lrc && git fetch origin && git reset --hard origin/master"
+     )
+ endif()
+ 

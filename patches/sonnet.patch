@@ -1,0 +1,18 @@
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index 921ddb3..496a93a 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -3,7 +3,12 @@ remove_definitions(-DQT_NO_CAST_FROM_ASCII)
+ include(ECMMarkAsTest)
+ include(ECMAddTests)
+ 
+-find_package(Qt5Test ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE)
++find_package(Qt5Test CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ ########### unittests ###############
+ 

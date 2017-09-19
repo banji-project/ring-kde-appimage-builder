@@ -1,0 +1,35 @@
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index 438446c..c201691 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -1,6 +1,11 @@
+ include(ECMAddTests)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ macro(ktextwidgets_unit_tests)
+    foreach(_testname ${ARGN})
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 0a50bf8..0d13b70 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -1,7 +1,12 @@
+ include(ECMMarkAsTest)
+ include(ECMMarkNonGuiExecutable)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ macro(ktextwidgets_executable_tests)
+    foreach(_testname ${ARGN})

@@ -1,0 +1,65 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c19d36d..cac3b81 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -28,11 +28,8 @@ endif()
+ 
+ set(HAVE_X11 ${X11_FOUND})
+ 
+-if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+-    find_package(KF5CoreAddons ${KF5_DEP_VERSION} REQUIRED)
+-    find_package(KF5WidgetsAddons ${KF5_DEP_VERSION} REQUIRED)
+-endif()
+-
++find_package(KF5CoreAddons ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5WidgetsAddons ${KF5_DEP_VERSION} REQUIRED)
+ 
+ include(GenerateExportHeader)
+ include(ECMSetupVersion)
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index ddabae4..5d513dd 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -1,5 +1,9 @@
++find_package(Qt5Test CONFIG QUIET)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test)
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ include(ECMAddTests)
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index a8250a3..2e1a479 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -109,7 +109,7 @@ if(BUILD_QCH)
+         ORG_DOMAIN org.kde
+         SOURCES # using only public headers, to cover only public API
+             ${KJobWidgets_HEADERS}
+-        MD_MAINPAGE "${CMAKE_SOURCE_DIR}/README.md"
++        MD_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+         LINK_QCHS
+             KF5CoreAddons_QCH
+             Qt5Widgets_QCH
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 5882d4e..da326ab 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -1,7 +1,13 @@
+ 
+ include(ECMMarkAsTest)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test)
++find_package(Qt5Test CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
++
+ 
+ macro(kjobwidgets_executable_tests)
+   foreach(_testname ${ARGN})
