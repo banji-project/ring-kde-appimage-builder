@@ -1,0 +1,64 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+
+PROJECT(dummy)
+
+SET(QT_MIN_VERSION  "5.7.0")
+set(CMAKE_BUILD_TYPE DEBUG)
+
+ADD_DEFINITIONS(-DQT_STATIC)
+
+# The parent script will add many paths here
+@ALL_KF5_DIR@
+
+# Force some extra static libs
+
+#QTBUG-38913
+# All static linking elements have to be added "by force" as the package
+# provides an incomplete list.
+set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a @EXTRA_LD@"
+)
+
+set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a @EXTRA_LD@"
+)
+
+set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a @EXTRA_LD@"
+)
+
+# Make sure KF5 subdirectory see each others
+
+set(BUILD_WITH_QTSCRIPT OFF)
+option(BUILD_WITH_QTSCRIPT OFF)
+
+# Fetch ring-kde and ring-lrc
+
+
+if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde)
+    execute_process(COMMAND
+        git clone https://anongit.kde.org/ring-kde --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/
+    )
+else()
+    execute_process(COMMAND
+        /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ && git fetch origin && git reset --hard origin/master"
+    )
+endif()
+
+if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc)
+    execute_process(COMMAND
+         git clone https://github.com/elv13/ring-lrc --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc/
+    )
+else()
+    execute_process(COMMAND
+        /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc/ && git fetch origin && git reset --hard origin/master"
+    )
+endif()
+
+# Now, setup both project to use the static mode
+set(ENABLE_STATIC true)
+set(ENABLE_LIBWRAP true)
+set(RING_BUILD_DIR /ring-daemon/src/)
+set(CMAKE_INSTALL_PREFIX=/opt/ring-kde.app)
+
+add_subdirectory(ring-kde)

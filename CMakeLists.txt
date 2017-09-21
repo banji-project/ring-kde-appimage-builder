@@ -132,4 +132,29 @@ fetch_framework(kinit KF5Init)
 fetch_framework(knotifyconfig KF5NotifyConfig)
 fetch_framework(kdeclarative KF5Declarative "-lGL -lGLU")
 
-fetch_framework(ring-kde Ring-KDE)
+# Now, begin to setup Ring-KDE
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${ring-kde}) #dsfdsf
+
+execute_process(COMMAND
+    bash -c "for LIB in \$(find /ring-daemon/contrib/native/*/*/.libs/ | grep -E \"*\\.a\$\"); do echo -n \" \$LIB\";done"
+    OUTPUT_VARIABLE DRING_STATIC
+)
+
+execute_process(COMMAND
+    bash -c "for LIB in \$(find /ring-daemon/contrib/native/*/.libs/ | grep -E \"*\\.a\$\"); do echo -n \" \$LIB\";done"
+    OUTPUT_VARIABLE DRING_STATIC2
+)
+
+set(EXTRA_LD "${DRING_STATIC} ${DRING_STATIC2} -lGL -lGLU")
+
+configure_file(${CMAKE_SOURCE_DIR}/CMakeRingWrapper.txt.in
+    ${CMAKE_CURRENT_BINARY_DIR}/ring-kde/CMakeLists.txt
+    @ONLY
+)
+
+#execute_process(COMMAND
+#    cmake ../ -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${name}/install -Wno-dev
+#    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ring-kde/build/
+#    RESULT_VARIABLE CMAKE_CMD_RES
+#)
+add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/ring-kde)
