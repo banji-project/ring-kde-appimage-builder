@@ -22,7 +22,8 @@ RUN apt install libvdpau-dev libva-dev gettext autopoint libasound-dev \
 # Install the ring library (without the daemon)
 RUN git clone https://github.com/savoirfairelinux/ring-daemon
 RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
- ../bootstrap --disable-dbus-cpp htop&& make -j
+ ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
+   --enable-opus --enable-zlib&& make -j
 
 # Compile the daemon. Pulse is disabled for now because it pulls
 # too many dependencies are cause libring to link to them...
@@ -42,11 +43,11 @@ RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.8/5.8.0/single/qt-everywhere-
 RUN cd qt-e* && 
 
 
-./configure -v -release -opensource -confirm-license -reduce-exports -ssl
- -qt-xcb -feature-accessibility -opengl desktop  -static -nomake examples
- -nomake tests -skip qtwebengine -skip qtscript -skip qt3d -skip qtandroidextras
- -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts
- -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors
+./configure -v -release -opensource -confirm-license -reduce-exports -ssl \
+ -qt-xcb -feature-accessibility -opengl desktop  -static -nomake examples \
+ -nomake tests -skip qtwebengine -skip qtscript -skip qt3d -skip qtandroidextras \
+ -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts \
+ -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors \
  -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwayland \
   -prefix /opt/usr
 

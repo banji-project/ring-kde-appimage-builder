@@ -145,7 +145,12 @@ execute_process(COMMAND
     OUTPUT_VARIABLE DRING_STATIC2
 )
 
-set(EXTRA_LD "${DRING_STATIC} ${DRING_STATIC2} -lGL -lGLU")
+execute_process(COMMAND
+    bash -c "for LIB in \$(find /ring-daemon/contrib/native/*/lib*.a | grep -E \"*\\.a\$\"); do echo -n \" \$LIB\";done"
+    OUTPUT_VARIABLE DRING_STATIC3
+)
+
+set(EXTRA_LD "${DRING_STATIC} ${DRING_STATIC2} ${DRING_STATIC3} -lGL -lGLU")
 
 configure_file(${CMAKE_SOURCE_DIR}/CMakeRingWrapper.txt.in
     ${CMAKE_CURRENT_BINARY_DIR}/ring-kde/CMakeLists.txt
