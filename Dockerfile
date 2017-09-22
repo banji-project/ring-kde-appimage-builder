@@ -11,28 +11,30 @@
 # Qt isn't ABI compatible, this solves some runtime issues on some
 # weirdly configured systems. It also, when used along with -lto,
 # reduces the image size and startup time.
+FROM ubuntu:14.04
+MAINTAINER Emmanuel Lepage-Vallee (elv1313@gmail.com)
+
+RUN apt update && apt upgrade -y
 
 # Those are the Ring daemon build system dependencies
-RUN apt install build-essential curl pkg-config autoconf cmake yasm libtool
+RUN apt install build-essential curl pkg-config autoconf cmake3 yasm \
+ libtool git wget -y
 
-# This is necessary to build Ring with Pulse and video accel
-RUN apt install libvdpau-dev libva-dev gettext autopoint libasound-dev \
- libpulse-dev libudev-dev wget libdbus-1-dev -y
+# Since early 2017, Ring depends on C++14
+RUN echo deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main >> /etc/apt/sources.list
+RUN echo deb-src http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main >> /etc/apt/sources.list
+RUN apt update
 
-# Install the ring library (without the daemon)
-RUN git clone https://github.com/savoirfairelinux/ring-daemon
-RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
- ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
-   --enable-opus --enable-zlib&& make -j
+RUN apt remove gcc g++ -y
+RUN apt install gcc-7 g++-7 -y --force-yes
 
-# Compile the daemon. Pulse is disabled for now because it pulls
-# too many dependencies are cause libring to link to them...
-RUN cd ring-daemon &&  ./autogen.sh && ./configure --without-dbus \
- --enable-static --without-pulse && make -j
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 \
+ --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
 # Those are the QtQuick OpenGL dependencies
 RUN apt install libgl1-mesa-dev libgl1-mesa-dev libgles2-mesa-dev libglu-dev\
- libglu1-mesa-dev freeglut3 libgl1-mesa-dev libwayland-egl1-mesa python -y
+ libglu1-mesa-dev freeglut3 libgl1-mesa-dev libwayland-egl1-mesa python \
+ libssl-dev -y
 
 # Download Qt in order to build a minimal library
 RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.8/5.8.0/single/qt-everywhere-opensource-src-5.8.0.tar.gz &&\
@@ -40,16 +42,14 @@ RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.8/5.8.0/single/qt-everywhere-
 
 # Build a static Qt package with as little system dependencies as
 # possible
-RUN cd qt-e* && 
-
-
-./configure -v -release -opensource -confirm-license -reduce-exports -ssl \
- -qt-xcb -feature-accessibility -opengl desktop  -static -nomake examples \
- -nomake tests -skip qtwebengine -skip qtscript -skip qt3d -skip qtandroidextras \
- -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts \
- -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors \
- -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwayland \
-  -prefix /opt/usr
+RUN cd qt-e* &&\
+  ./configure -v -release -opensource -confirm-license -reduce-exports -ssl \
+   -qt-xcb -feature-accessibility -opengl desktop  -static -nomake examples \
+   -nomake tests -skip qtwebengine -skip qtscript -skip qt3d -skip qtandroidextras \
+   -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts \
+   -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors \
+   -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwayland \
+   -prefix /opt/usr -no-glib -qt-zlib
 
 # Build Qt, this is long
 RUN cd qt-e* && make -j8
@@ -60,15 +60,46 @@ RUN cd qt-e* && make install
 RUN rm /opt/usr/lib/cmake/Qt5Test/Qt5TestConfig.cmake
 
 # Set some variable before bootstrapping KF5
-export Qt5_DIR=/opt/usr/
-export CMAKE_PREFIX_PATH=/opt/usr/
-export QT_INSTALL_PREFIX=/opt/usr/
+ENV Qt5_DIR=/opt/usr/
+ENV CMAKE_PREFIX_PATH=/opt/usr/
+RUN QT_INSTALL_PREFIX=/opt/usr/
+
+# Begin building KF5
+RUN apt install gperf gettext libxcb-keysyms1-dev libxrender-dev -y
+RUN git clone https://anongit.kde.org/extra-cmake-modules
+RUN cd extra-cmake-modules && mkdir build && cd build && cmake .. \
+ -DCMAKE_INSTALL_PREFIX=/ && make -j8 install
 
 RUN mkdir -p /bootstrap/build
 
-ADD CMakeLists.txt /bootstrap/CMakeRingWrapper.txt.in
+ADD CMakeLists.txt /bootstrap/CMakeLists.txt
 ADD CMakeRingWrapper.txt.in /bootstrap/CMakeRingWrapper.txt.in
 ADD CMakeWrapper.txt.in /bootstrap/CMakeWrapper.txt.in
 ADD patches /bootstrap/patches
+
+RUN mkdir /opt/ring-kde.AppDir -p
+
+# This is necessary to build Ring with Pulse and video accel
+# **WARNING** This has to be executed AFTER Qt has been installed to
+# avoid poluting the system with versions of those packages
+RUN apt install libvdpau-dev libva-dev gettext autopoint libasound-dev \
+ libpulse-dev libudev-dev wget libdbus-1-dev -y
+
+# Wahtever makes it happy
+RUN ln -s /usr/bin/gcc /usr/bin/cc
+
+# Fetch the ring library (without the daemon)
+RUN git clone https://github.com/savoirfairelinux/ring-daemon --progress --verbose
+RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
+ ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
+   --enable-opus --enable-zlib&& make fetch-all
+
+# Build all the static dependencies
+RUN cd ring-daemon/contrib/native && make -j8
+
+# Compile the daemon. Pulse is disabled for now because it pulls
+# too many dependencies are cause libring to link to them...
+RUN cd ring-daemon &&  ./autogen.sh && ./configure --without-dbus \
+ --enable-static --without-pulse && make -j
 
 RUN cd /bootstrap/build && cmake .. -CMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir

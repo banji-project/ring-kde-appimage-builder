@@ -63,6 +63,14 @@ function(fetch_framework name frmname)
 #        )
     endif()
 
+    # Apply the patches until they are merged
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/patches/${name}.patch)
+        execute_process(COMMAND
+            git apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/${name}.patch
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name}
+        )
+    endif()
+
     # This would be nice, but for now seems out of reach
     #add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/${name})
     #set(${frmname}_DIR "${CMAKE_CURRENT_BINARY_DIR}/build/${name}" PARENT_SCOPE)
