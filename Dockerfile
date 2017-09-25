@@ -65,7 +65,8 @@ ENV CMAKE_PREFIX_PATH=/opt/usr/
 RUN QT_INSTALL_PREFIX=/opt/usr/
 
 # Begin building KF5
-RUN apt install gperf gettext libxcb-keysyms1-dev libxrender-dev -y
+RUN apt install gperf gettext libxcb-keysyms1-dev libxrender-dev \
+ flex bison -y
 RUN git clone https://anongit.kde.org/extra-cmake-modules
 RUN cd extra-cmake-modules && mkdir build && cd build && cmake .. \
  -DCMAKE_INSTALL_PREFIX=/ && make -j8 install
@@ -102,4 +103,5 @@ RUN cd ring-daemon/contrib/native && make -j8
 RUN cd ring-daemon &&  ./autogen.sh && ./configure --without-dbus \
  --enable-static --without-pulse && make -j
 
+# Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && cmake .. -CMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir

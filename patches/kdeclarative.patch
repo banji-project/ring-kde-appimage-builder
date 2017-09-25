@@ -1,0 +1,35 @@
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index 2d1fed0..0d0ce78 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -2,7 +2,12 @@ INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/..")
+ 
+ include(ECMAddTests)
+ 
+-find_package(Qt5Test REQUIRED)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ ecm_add_test(columnproxymodeltest.cpp
+     ../src/qmlcontrols/kquickcontrolsaddons/columnproxymodel.cpp
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 08e535f..ace8422 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -1,6 +1,11 @@
+ include(ECMMarkAsTest)
+ 
+-find_package(Qt5Test REQUIRED)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ add_executable(kdeclarativetest kdeclarativetest.cpp)
+ 
