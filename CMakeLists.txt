@@ -33,8 +33,11 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
 )
 
 set(ALL_KF5_DIR "set(ECM_DIR \"${CMAKE_CURRENT_BINARY_DIR}/extra-cmake-modules/install/share/ECM/cmake/\")")
+set(ALL_KF5_LIST "")
 
 function(fetch_framework name frmname)
+    list(APPEND ALL_KF5_LIST "${CMAKE_CURRENT_BINARY_DIR}/${name}/install/")
+    set(ALL_KF5_LIST ${ALL_KF5_LIST} PARENT_SCOPE)
 
     if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${name}/done")
         set(FRM_DIR "${CMAKE_CURRENT_BINARY_DIR}/${name}/install/lib/x86_64-linux-gnu/cmake/${frmname}/")
@@ -171,3 +174,8 @@ configure_file(${CMAKE_SOURCE_DIR}/CMakeRingWrapper.txt.in
 #    RESULT_VARIABLE CMAKE_CMD_RES
 #)
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/ring-kde)
+
+foreach(DIR ${ALL_KF5_LIST})
+    message("BAR ${DIR}")
+    file(COPY ${DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
+endforeach()
