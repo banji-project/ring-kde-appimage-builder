@@ -55,7 +55,7 @@ function(fetch_framework name frmname)
 
     if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name})
         execute_process(COMMAND
-             git clone https://anongit.kde.org/${name} --branch master ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name}/
+             git clone https://anongit.kde.org/${name} --branch v5.38.0 ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name}/
         )
     else()
 #        execute_process(COMMAND
