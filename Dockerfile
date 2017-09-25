@@ -91,6 +91,7 @@ RUN ln -s /usr/bin/gcc /usr/bin/cc
 
 # Fetch the ring library (without the daemon)
 RUN git clone https://github.com/savoirfairelinux/ring-daemon --progress --verbose
+RUN cd ring-daemon && git apply /bootstrap/patches/ring-daemon.patch
 RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
  ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
    --enable-opus --enable-zlib&& make fetch-all
@@ -101,7 +102,9 @@ RUN cd ring-daemon/contrib/native && make -j8
 # Compile the daemon. Pulse is disabled for now because it pulls
 # too many dependencies are cause libring to link to them...
 RUN cd ring-daemon &&  ./autogen.sh && ./configure --without-dbus \
- --enable-static --without-pulse && make -j
+ --enable-static --without-pulse --disable-vdpau --disable-vaapi \
+ --disable-videotoolbox --disable-vda --disable-accel \
+ --prefix=/opt/ring-kde.AppDir && make -j
 
 # Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && cmake .. -CMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
