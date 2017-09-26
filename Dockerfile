@@ -107,7 +107,7 @@ RUN cd ring-daemon &&  ./autogen.sh && ./configure --without-dbus \
  --prefix=/opt/ring-kde.AppDir && make -j
 
 # Build all the frameworks and prepare Ring-KDE
-RUN cd /bootstrap/build && cmake .. -CMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
+RUN cd /bootstrap/build && cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
  -Wno-dev || echo Ignore
 
 # Add the appimages
@@ -119,5 +119,5 @@ RUN cp /bootstrap/build/ring-kde/ring-kde/data/*.desktop /opt/ring*/
 RUN cp /bootstrap/build/ring-kde/ring-kde/data/icons/sc-apps-ring-kde.svgz \
   /opt/ring-kde.AppDir/ring-kde.svgz
 
-CMD cd cd /bootstrap/build && make -j8 install && /appimagetool-x86_64.AppImage \
+CMD cd /bootstrap/build && make -j8 install && /appimagetool-x86_64.AppImage \
   /opt/ring-kde.AppDir/ ring-kde.appimage
