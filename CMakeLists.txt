@@ -141,7 +141,7 @@ fetch_framework(kio KF5KIO)
 
 fetch_framework(kinit KF5Init)
 fetch_framework(knotifyconfig KF5NotifyConfig)
-fetch_framework(kdeclarative KF5Declarative "-lGL -lGLU")
+fetch_framework(kdeclarative KF5Declarative "-lGL -lGLU -lglut")
 
 # Now, begin to setup Ring-KDE
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${ring-kde}) #dsfdsf
