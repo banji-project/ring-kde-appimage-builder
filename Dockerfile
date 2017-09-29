@@ -113,7 +113,7 @@ ADD cmake /bootstrap/cmake
 
 # Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
- -Wno-dev || echo Ignore
+ -DCMAKE_BUILD_TYPE=Release -Wno-dev || echo Ignore
 
 # Add the appimages
 RUN apt install libfuse2 -y
@@ -126,5 +126,14 @@ RUN cp /bootstrap/build/ring-kde/ring-kde/data/icons/sc-apps-ring-kde.svgz \
 
 ADD AppRun /opt/ring-kde.AppDir/
 
-CMD cd /bootstrap/build && make -j8 install && /appimagetool-x86_64.AppImage \
-  /opt/ring-kde.AppDir/ ring-kde.appimage
+RUN sed -i 's/DBusActivatable=true/X-DBusActivatable=true/' -i /opt/ring-kde.AppDir/cx.ring.ring-kde.desktop
+
+#RUN strip --strip-debug --strip-unneeded /opt/ring-kde.AppDir/lib/libring.so.0.0.0
+
+# TODO: Fix it (Gentoo call it differently)
+RUN cp /lib/x86_64-linux-gnu/libpcre.so.3 /opt/ring-kde.AppDir/lib/
+
+CMD cd /bootstrap/build && make -j8 install && find /opt/ring-kde.AppDir/ \
+  | grep -v ring-kde | xargs rm -rf &&\
+   rm -rf /opt/ring-kde.AppDir/share/locale/ && /appimagetool-x86_64.AppImage\
+  /opt/ring-kde.AppDir/ /export/ring-kde.appimage
