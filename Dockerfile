@@ -66,17 +66,12 @@ RUN QT_INSTALL_PREFIX=/opt/usr/
 
 # Begin building KF5
 RUN apt install gperf gettext libxcb-keysyms1-dev libxrender-dev \
- flex bison -y
+ libxcb-image0-dev libxcb-xinerama0-dev flex bison -y
 RUN git clone https://anongit.kde.org/extra-cmake-modules
 RUN cd extra-cmake-modules && mkdir build && cd build && cmake .. \
  -DCMAKE_INSTALL_PREFIX=/ && make -j8 install
 
 RUN mkdir -p /bootstrap/build
-
-ADD CMakeLists.txt /bootstrap/CMakeLists.txt
-ADD CMakeRingWrapper.txt.in /bootstrap/CMakeRingWrapper.txt.in
-ADD CMakeWrapper.txt.in /bootstrap/CMakeWrapper.txt.in
-ADD patches /bootstrap/patches
 
 RUN mkdir /opt/ring-kde.AppDir -p
 
@@ -91,6 +86,10 @@ RUN ln -s /usr/bin/gcc /usr/bin/cc
 
 # Fetch the ring library (without the daemon)
 RUN git clone https://github.com/savoirfairelinux/ring-daemon --progress --verbose
+
+# Add the patch now as the daemon use them
+ADD patches /bootstrap/patches
+
 RUN cd ring-daemon && git apply /bootstrap/patches/ring-daemon.patch
 RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
  ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
@@ -104,7 +103,13 @@ RUN cd ring-daemon/contrib/native && make -j8
 RUN cd ring-daemon &&  ./autogen.sh && ./configure --without-dbus \
  --enable-static --without-pulse --disable-vdpau --disable-vaapi \
  --disable-videotoolbox --disable-vda --disable-accel \
- --prefix=/opt/ring-kde.AppDir && make -j
+ --prefix=/opt/ring-kde.AppDir && make -j install
+
+# Only add the file after the Daemon is built to speedup image creation
+ADD CMakeLists.txt /bootstrap/CMakeLists.txt
+ADD CMakeRingWrapper.txt.in /bootstrap/CMakeRingWrapper.txt.in
+ADD CMakeWrapper.txt.in /bootstrap/CMakeWrapper.txt.in
+ADD cmake /bootstrap/cmake
 
 # Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
@@ -118,6 +123,8 @@ RUN chmod a+x appimagetool-x86_64.AppImage
 RUN cp /bootstrap/build/ring-kde/ring-kde/data/*.desktop /opt/ring*/
 RUN cp /bootstrap/build/ring-kde/ring-kde/data/icons/sc-apps-ring-kde.svgz \
   /opt/ring-kde.AppDir/ring-kde.svgz
+
+ADD AppRun /opt/ring-kde.AppDir/
 
 CMD cd /bootstrap/build && make -j8 install && /appimagetool-x86_64.AppImage \
   /opt/ring-kde.AppDir/ ring-kde.appimage

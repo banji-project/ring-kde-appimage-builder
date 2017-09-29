@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+#CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 PROJECT(dummy)
 
@@ -17,20 +17,36 @@ ADD_DEFINITIONS(-DQT_STATIC)
 # provides an incomplete list.
 set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \
  /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a \
+ /opt/usr/lib/libxcb-static.a \
  /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a \
- /opt/usr/plugins/platforms/libqxcb.a -lGL -lGLU  @EXTRA_LD@"
+  -lGL -lGLU  @EXTRA_LD@"
 )
 
+
+ADD_DEFINITIONS(-DQT_STATICPLUGIN)
+
+# Without any plugin, everything will compile, but wont run. `qmake` does
+# tons of strange magic to make it work. I used
+#
+# for FILE in `find /opt/usr/ -type f -iname '*.a'`; do
+#     nm -gC $FILE | grep -in $NAME > /dev/null && echo $FILE
+# done
+#
+# To find all the missing plugin symbols
+
 set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
- /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a \
- /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a \
- /opt/usr/plugins/platforms/libqxcb.a -lGL -lGLU  @EXTRA_LD@"
+ ${CMAKE_BINARY_DIR}/libqt5pluginenabler.a \
+/ring-daemon/contrib/native/speex/libspeex/.libs/libspeex.a \
+/ring-daemon/contrib/native/opus/.libs/libopus.a \
+/ring-daemon/contrib/native/ogg/src/.libs/libogg.a"
 )
 
 set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \
  /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a \
  /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a \
- /opt/usr/plugins/platforms/libqxcb.a -lGL -lGLU  @EXTRA_LD@"
+ /opt/usr/lib/libxcb-static.a \
+ /opt/usr/lib/libQt5XcbQpa.a \
+  -lGL -lGLU  @EXTRA_LD@"
 )
 
 # Make sure KF5 subdirectory see each others
@@ -46,9 +62,9 @@ if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde)
         git clone https://anongit.kde.org/ring-kde --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/
     )
 else()
-    execute_process(COMMAND
-        /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ && git fetch origin && git reset --hard origin/master"
-    )
+#    execute_process(COMMAND
+#        /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ && git fetch origin && git reset --hard origin/master"
+#    )
 endif()
 
 if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc)

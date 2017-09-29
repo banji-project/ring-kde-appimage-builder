@@ -7,6 +7,8 @@ set(CMAKE_BUILD_TYPE DEBUG)
 
 ADD_DEFINITIONS(-DQT_STATIC)
 
+SET(LOCAL_CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+
 #QTBUG-38913
 # All static linking elements have to be added "by force" as the package
 # provides an incomplete list.
@@ -141,7 +143,7 @@ fetch_framework(kio KF5KIO)
 
 fetch_framework(kinit KF5Init)
 fetch_framework(knotifyconfig KF5NotifyConfig)
-fetch_framework(kdeclarative KF5Declarative "-lGL -lGLU -lglut")
+fetch_framework(kdeclarative KF5Declarative "-lGL -lGLU")
 
 # Now, begin to setup Ring-KDE
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${ring-kde}) #dsfdsf
@@ -167,6 +169,9 @@ configure_file(${CMAKE_SOURCE_DIR}/CMakeRingWrapper.txt.in
     ${CMAKE_CURRENT_BINARY_DIR}/ring-kde/CMakeLists.txt
     @ONLY
 )
+
+#TODO convert to macro
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/qt5pluginenabler.cmake)
 
 #execute_process(COMMAND
 #    cmake ../ -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${name}/install -Wno-dev
