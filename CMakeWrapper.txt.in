@@ -14,15 +14,21 @@ ADD_DEFINITIONS(-DQT_STATIC)
 # All static linking elements have to be added "by force" as the package
 # provides an incomplete list.
 set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \
- /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lpthread @EXTRA_LD@"
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl \
+ -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
 )
 
 set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
- /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lpthread @EXTRA_LD@"
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl \
+ -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
 )
 
 set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \
- /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lpthread @EXTRA_LD@"
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl \
+ -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
 )
 
 # Make sure KF5 subdirectory see each others

@@ -40,6 +40,16 @@ RUN apt install libgl1-mesa-dev libgl1-mesa-dev libgles2-mesa-dev libglu-dev\
 RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.8/5.8.0/single/qt-everywhere-opensource-src-5.8.0.tar.gz &&\
  tar -zxvf qt-everywhere-opensource-src-5.8.0.tar.gz
 
+# Bypass tools that attempt to "optimize" flags
+ENV CXX="g++ -static-libgcc -static-libstdc++"
+
+ENV LDFLAGS="-static-libstdc++ -fuse-linker-plugin -Wl,--gc-sections  -Wl,--strip-all"
+ENV CXXFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections  -Wl,--strip-all"
+ENV CFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections  -Wl,--strip-all"
+#ENV LDFLAGS="-static-libstdc++ -flto -O -fuse-linker-plugin -Wl,--gc-sections"
+#ENV CXXFLAGS="-ffunction-sections -fdata-sections -flto -Wl,--gc-sections"
+#ENV CFLAGS="-ffunction-sections -fdata-sections -flto -Wl,--gc-sections"
+
 # Build a static Qt package with as little system dependencies as
 # possible
 RUN cd qt-e* &&\
@@ -132,6 +142,17 @@ RUN sed -i 's/DBusActivatable=true/X-DBusActivatable=true/' -i /opt/ring-kde.App
 
 # TODO: Fix it (Gentoo call it differently)
 RUN cp /lib/x86_64-linux-gnu/libpcre.so.3 /opt/ring-kde.AppDir/lib/
+
+# TODO: Fix this too
+RUN echo '#include <QtPlugin>' > /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtQuick2Plugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtQuickControls2Plugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QEvdevKeyboardPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QEvdevMousePlugin)' >> /bootstrap/build/newmain.cpp
+RUN cat /bootstrap/build/ring-kde/ring-kde/src/main.cpp >> /bootstrap/build/newmain.cpp
+RUN cp /bootstrap/build/newmain.cpp /bootstrap/build/ring-kde/ring-kde/src/main.cpp
 
 CMD cd /bootstrap/build && make -j8 install && find /opt/ring-kde.AppDir/ \
   | grep -v ring-kde | xargs rm -rf &&\
