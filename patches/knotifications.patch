@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f9b79c5..9bf941d 100644
+index a33275e..c3598ac 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -65,10 +65,11 @@ find_package(KF5Config ${KF5_DEP_VERSION} REQUIRED)

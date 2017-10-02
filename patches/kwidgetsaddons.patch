@@ -1,5 +1,5 @@
 diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
-index a906a23..0c81c4a 100644
+index 5f46b4c..761fa87 100644
 --- a/autotests/CMakeLists.txt
 +++ b/autotests/CMakeLists.txt
 @@ -1,7 +1,12 @@

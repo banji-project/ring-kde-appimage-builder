@@ -83,7 +83,7 @@ function(fetch_framework name frmname)
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${name}/build/)
 
     execute_process(COMMAND
-        cmake ../ -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${name}/install -Wno-dev
+        cmake ../ -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${name}/install -Wno-dev -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${name}/build/
         RESULT_VARIABLE CMAKE_CMD_RES
     )

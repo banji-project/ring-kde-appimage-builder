@@ -1,13 +1,24 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 2fefcd0..a1268f2 100644
+index 2fefcd0..7d5357d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -73,7 +73,7 @@ remove_definitions(-DQT_NO_CAST_FROM_BYTEARRAY)
+@@ -58,6 +58,10 @@ find_package(KF5ItemViews ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5JobWidgets ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5WidgetsAddons ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5WindowSystem ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5GuiAddons ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5TextWidgets ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5XmlGui ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5GlobalAccel ${KF5_DEP_VERSION} REQUIRED)
+ endif()
+ 
+ # tell what is missing without doctools
+@@ -73,7 +77,7 @@ remove_definitions(-DQT_NO_CAST_FROM_BYTEARRAY)
  add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
  
  set(REQUIRED_QT_VERSION 5.7.0)
 -find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Widgets DBus Network Concurrent Xml Test)
-+find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Widgets DBus Network Concurrent Xml)
++find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Widgets DBus Network Concurrent Xml Svg TextToSpeech PrintSupport)
  
  find_package(GSSAPI)
  set_package_properties(GSSAPI PROPERTIES DESCRIPTION "Allows KIO to make use of certain HTTP authentication services"
@@ -30,6 +41,100 @@ index 791eb78..16c53f9 100644
  include(ECMAddTests)
  
  add_subdirectory(http)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 8f09239..5bd2334 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -5,7 +5,7 @@ add_subdirectory(protocoltojson)
+ add_subdirectory(kntlm)
+ add_subdirectory(ioslaves)
+ add_subdirectory(kiod)
+-add_subdirectory(kssld)
++#add_subdirectory(kssld)
+ add_subdirectory(kioslave)
+ 
+ if (NOT KIOCORE_ONLY)
+diff --git a/src/core/authinfo.cpp b/src/core/authinfo.cpp
+index e7d0bb5..d866de0 100644
+--- a/src/core/authinfo.cpp
++++ b/src/core/authinfo.cpp
+@@ -63,7 +63,7 @@ public:
+ };
+ Q_DECLARE_METATYPE(ExtraField)
+ 
+-static QDataStream &operator<< (QDataStream &s, const ExtraField &extraField)
++QDataStream &operator<< (QDataStream &s, const ExtraField &extraField)
+ {
+     s << extraField.customTitle;
+     s << static_cast<int>(extraField.flags);
+@@ -71,7 +71,7 @@ static QDataStream &operator<< (QDataStream &s, const ExtraField &extraField)
+     return s;
+ }
+ 
+-static QDataStream &operator>> (QDataStream &s, ExtraField &extraField)
++QDataStream &operator>> (QDataStream &s, ExtraField &extraField)
+ {
+     s >> extraField.customTitle;
+     int i;
+@@ -81,7 +81,7 @@ static QDataStream &operator>> (QDataStream &s, ExtraField &extraField)
+     return s;
+ }
+ 
+-static QDBusArgument &operator<<(QDBusArgument &argument, const ExtraField &extraField)
++QDBusArgument &operator<<(QDBusArgument &argument, const ExtraField &extraField)
+ {
+     argument.beginStructure();
+     argument << extraField.customTitle << static_cast<int>(extraField.flags)
+@@ -90,7 +90,7 @@ static QDBusArgument &operator<<(QDBusArgument &argument, const ExtraField &extr
+     return argument;
+ }
+ 
+-static const QDBusArgument &operator>>(const QDBusArgument &argument, ExtraField &extraField)
++const QDBusArgument &operator>>(const QDBusArgument &argument, ExtraField &extraField)
+ {
+     QDBusVariant value;
+     int flag;
+diff --git a/src/core/authinfo.h b/src/core/authinfo.h
+index 98d3649..330b83a 100644
+--- a/src/core/authinfo.h
++++ b/src/core/authinfo.h
+@@ -60,11 +60,11 @@ class AuthInfoPrivate;
+  */
+ class KIOCORE_EXPORT AuthInfo
+ {
+-    KIOCORE_EXPORT friend QDataStream &operator<< (QDataStream &s, const AuthInfo &a);
+-    KIOCORE_EXPORT friend QDataStream &operator>> (QDataStream &s, AuthInfo &a);
++    friend QDataStream &operator<< (QDataStream &s, const AuthInfo &a);
++    friend QDataStream &operator>> (QDataStream &s, AuthInfo &a);
+ 
+-    KIOCORE_EXPORT friend QDBusArgument &operator<<(QDBusArgument &argument, const AuthInfo &a);
+-    KIOCORE_EXPORT friend const QDBusArgument &operator>>(const QDBusArgument &argument, AuthInfo &a);
++    friend QDBusArgument &operator<<(QDBusArgument &argument, const AuthInfo &a);
++    friend const QDBusArgument &operator>>(const QDBusArgument &argument, AuthInfo &a);
+ 
+ public:
+ 
+@@ -291,12 +291,18 @@ private:
+     AuthInfoPrivate *const d;
+ };
+ 
+-KIOCORE_EXPORT QDataStream &operator<< (QDataStream &s, const AuthInfo &a);
++QDataStream &operator<< (QDataStream &s, const AuthInfo &a);
++QDataStream &operator>> (QDataStream &s, AuthInfo &a);
++
++QDBusArgument &operator<<(QDBusArgument &argument, const AuthInfo &a);
++const QDBusArgument &operator>>(const QDBusArgument &argument, AuthInfo &a);
++
++/*KIOCORE_EXPORT QDataStream &operator<< (QDataStream &s, const AuthInfo &a);
+ KIOCORE_EXPORT QDataStream &operator>> (QDataStream &s, AuthInfo &a);
+ 
+ KIOCORE_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const AuthInfo &a);
+ KIOCORE_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, AuthInfo &a);
+-
++*/
+ /**
+  * A Singleton class that provides access to passwords
+  * stored in .netrc files for automatic login purposes.
 diff --git a/src/ioslaves/trash/tests/CMakeLists.txt b/src/ioslaves/trash/tests/CMakeLists.txt
 index f913892..76a4d7f 100644
 --- a/src/ioslaves/trash/tests/CMakeLists.txt

@@ -81,6 +81,7 @@ endif()
 set(ENABLE_STATIC true)
 set(ENABLE_LIBWRAP true)
 set(RING_BUILD_DIR /ring-daemon/src/)
+set(DISABLE_KDBUS_SERVICE true)
 #set(CMAKE_INSTALL_PREFIX ring-kde.AppDir)
 
 add_subdirectory(ring-kde)

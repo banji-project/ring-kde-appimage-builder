@@ -156,6 +156,7 @@ RUN echo 'Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)' >> /bootstrap/build/newmain.
 RUN echo 'Q_IMPORT_PLUGIN(QtQuickControls1Plugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QJpegPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QSvgPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)' >> /bootstrap/build/newmain.cpp
 RUN cat /bootstrap/build/ring-kde/ring-kde/src/main.cpp >> /bootstrap/build/newmain.cpp
 RUN cp /bootstrap/build/newmain.cpp /bootstrap/build/ring-kde/ring-kde/src/main.cpp
 
