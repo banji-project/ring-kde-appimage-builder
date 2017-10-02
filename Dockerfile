@@ -123,7 +123,7 @@ ADD cmake /bootstrap/cmake
 
 # Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
- -DCMAKE_BUILD_TYPE=Release -Wno-dev || echo Ignore
+ -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 -Wno-dev || echo Ignore
 
 # Add the appimages
 RUN apt install libfuse2 -y
@@ -151,6 +151,11 @@ RUN echo 'Q_IMPORT_PLUGIN(QtQuickControls2Plugin)' >> /bootstrap/build/newmain.c
 RUN echo 'Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QEvdevKeyboardPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QEvdevMousePlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtQuickControls1Plugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QJpegPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QSvgPlugin)' >> /bootstrap/build/newmain.cpp
 RUN cat /bootstrap/build/ring-kde/ring-kde/src/main.cpp >> /bootstrap/build/newmain.cpp
 RUN cp /bootstrap/build/newmain.cpp /bootstrap/build/ring-kde/ring-kde/src/main.cpp
 
