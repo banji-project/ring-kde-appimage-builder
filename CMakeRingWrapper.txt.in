@@ -38,7 +38,7 @@ set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
  ${CMAKE_BINARY_DIR}/libqt5pluginenabler.a \
 /ring-daemon/contrib/native/speex/libspeex/.libs/libspeex.a \
 /ring-daemon/contrib/native/opus/.libs/libopus.a \
-/ring-daemon/contrib/native/ogg/src/.libs/libogg.a"
+-I /ring-daemon/src/ -I/ring-daemon/src/dring/  /ring-daemon/src/.libs/libring.a -L/ring-daemon/contrib/x86_64-linux-gnu/lib -lpjsua2-x86_64-pc-linux-gnu -lpjsua-x86_64-pc-linux-gnu -lpjsip-ua-x86_64-pc-linux-gnu -lpjsip-simple-x86_64-pc-linux-gnu -lpjsip-x86_64-pc-linux-gnu -lpjmedia-codec-x86_64-pc-linux-gnu -lpjmedia-videodev-x86_64-pc-linux-gnu -lpjmedia-audiodev-x86_64-pc-linux-gnu -lpjmedia-x86_64-pc-linux-gnu -lpjnath-x86_64-pc-linux-gnu -lpjlib-util-x86_64-pc-linux-gnu -lsrtp-x86_64-pc-linux-gnu -lpj-x86_64-pc-linux-gnu -lrt -lasound -lyaml-cpp -ljsoncpp /ring-daemon/contrib/x86_64-linux-gnu/lib/libthreadutil.a /ring-daemon/contrib/x86_64-linux-gnu/lib/libixml.a -L/ring-daemon/contrib/x86_64-linux-gnu/lib/ -lpcre -lcryptopp -lavdevice -lavformat -lavcodec -ldl -lxcb-shm -lxcb-xfixes -lxcb-render -lxcb-shape -lxcb -lx264 -lvpx -lswscale -lavutil -ludev -lnatpmp -lboost_random -lboost_system -lgsm -lrestbed /ring-daemon/contrib/native/opendht/src/.libs/libopendht.a -lpthread -largon2 /ring-daemon/contrib/x86_64-linux-gnu/lib/libgnutls.a -lhogweed -lz /ring-daemon/contrib/x86_64-linux-gnu/lib/libgmp.a -lnettle /ring-daemon/contrib/native/opus/.libs/libopus.a /ring-daemon/contrib/native/upnp/upnp/.libs/libupnp.a /ring-daemon/contrib/native/upnp/threadutil/.libs/libthreadutil.a /ring-daemon/contrib/native/upnp/ixml/.libs/libixml.a /ring-daemon/contrib/native/sndfile/src/.libs/libsndfile.a /ring-daemon/contrib/x86_64-linux-gnu/lib/libFLAC.a /ring-daemon/contrib/x86_64-linux-gnu/lib/libvorbisenc.a /ring-daemon/contrib/x86_64-linux-gnu/lib/libvorbis.a /ring-daemon/contrib/x86_64-linux-gnu/lib/libogg.a /ring-daemon/contrib/native/uuid/.libs/libuuid.a /ring-daemon/contrib/native/speex/libspeex/.libs/libspeex.a /ring-daemon/contrib/native/samplerate/src/.libs/libsamplerate.a -lm -pthread"
 )
 
 set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \
@@ -72,9 +72,9 @@ if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc)
          git clone https://github.com/elv13/ring-lrc --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc/
     )
 else()
-    execute_process(COMMAND
-        /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc/ && git fetch origin && git reset --hard origin/master"
-    )
+ #   execute_process(COMMAND
+  #      /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc/ && git fetch origin && git reset --hard origin/master"
+   # )
 endif()
 
 # Now, setup both project to use the static mode

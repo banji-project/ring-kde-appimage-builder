@@ -43,9 +43,9 @@ RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.8/5.8.0/single/qt-everywhere-
 # Bypass tools that attempt to "optimize" flags
 ENV CXX="g++ -static-libgcc -static-libstdc++"
 
-ENV LDFLAGS="-static-libstdc++ -fuse-linker-plugin -Wl,--gc-sections  -Wl,--strip-all"
-ENV CXXFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections  -Wl,--strip-all"
-ENV CFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections  -Wl,--strip-all"
+ENV LDFLAGS="-static-libstdc++ -fuse-linker-plugin -Wl,--gc-sections -Wl,--strip-all -Wl,--as-needed"
+ENV CXXFLAGS="-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--strip-all"
+ENV CFLAGS="-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--strip-all"
 #ENV LDFLAGS="-static-libstdc++ -flto -O -fuse-linker-plugin -Wl,--gc-sections"
 #ENV CXXFLAGS="-ffunction-sections -fdata-sections -flto -Wl,--gc-sections"
 #ENV CFLAGS="-ffunction-sections -fdata-sections -flto -Wl,--gc-sections"
