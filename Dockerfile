@@ -50,6 +50,18 @@ ENV CFLAGS="-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--stri
 #ENV CXXFLAGS="-ffunction-sections -fdata-sections -flto -Wl,--gc-sections"
 #ENV CFLAGS="-ffunction-sections -fdata-sections -flto -Wl,--gc-sections"
 
+# Replace the default performance Qt flags for portability ones
+RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/common/qcc-base.conf
+RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/common/qcc-base.conf
+RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/common/gcc-base.conf
+RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/common/gcc-base.conf
+RUN echo 'QMAKE_CXXFLAGS -=-O3' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O3' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS -=-O2' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O2' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS=-Os' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE=-Os' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
+
 # Build a static Qt package with as little system dependencies as
 # possible
 RUN cd qt-e* &&\
@@ -59,7 +71,7 @@ RUN cd qt-e* &&\
    -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts \
    -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors \
    -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwayland \
-   -prefix /opt/usr -no-glib -qt-zlib
+   -prefix /opt/usr -no-glib -qt-zlib -qt-freetype
 
 # Build Qt, this is long
 RUN cd qt-e* && make -j8
@@ -123,7 +135,8 @@ ADD cmake /bootstrap/cmake
 
 # Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
- -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 -Wno-dev || echo Ignore
+ -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 \
+ -DRING_BUILD_DIR=/ring-daemon/src/ -Wno-dev || echo Ignore
 
 # Add the appimages
 RUN apt install libfuse2 -y
@@ -157,8 +170,16 @@ RUN echo 'Q_IMPORT_PLUGIN(QtQuickControls1Plugin)' >> /bootstrap/build/newmain.c
 RUN echo 'Q_IMPORT_PLUGIN(QJpegPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QSvgPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QXcbGlxIntegrationPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtGraphicalEffectsPrivatePlugin)' >> /bootstrap/build/newmain.cpp
+RUN echo 'Q_IMPORT_PLUGIN(QtQmlModelsPlugin)' >> /bootstrap/build/newmain.cpp
 RUN cat /bootstrap/build/ring-kde/ring-kde/src/main.cpp >> /bootstrap/build/newmain.cpp
 RUN cp /bootstrap/build/newmain.cpp /bootstrap/build/ring-kde/ring-kde/src/main.cpp
+
+# Make sure there is fallback fonts and color Emojis
+RUN mkdir /opt/ring-kde.AppDir/fonts
+ADD fonts/* /opt/ring-kde.AppDir/fonts/
 
 CMD cd /bootstrap/build && make -j8 install && find /opt/ring-kde.AppDir/ \
   | grep -v ring-kde | xargs rm -rf &&\
