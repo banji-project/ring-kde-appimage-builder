@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 6773145c..bcfffc7e 100644
+index 6773145c..1a1fee99 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -96,6 +96,8 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
@@ -11,12 +11,18 @@ index 6773145c..bcfffc7e 100644
  )
  
  #FIND_PACKAGE(Qt5TextToSpeech ${QT_MIN_VERSION} QUIET)
-@@ -118,6 +120,9 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
+@@ -113,11 +115,14 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
+   GuiAddons
+   DBusAddons
+   I18n
+-  Init
++  #Init
+   WindowSystem
    XmlGui
    Notifications
    IconThemes
 +  ItemViews
-+  KIO
++  #KIO
 +  Archive
    Crash
    NotifyConfig
@@ -57,28 +63,94 @@ index 0ca68a3f..069ca52f 100644
  }
  
  ///Show the toolbar editor
-diff --git a/src/main.cpp b/src/main.cpp
-index 98a023ea..87e0c3a4 100644
---- a/src/main.cpp
-+++ b/src/main.cpp
-@@ -1,3 +1,20 @@
-+#include <QtPlugin>
-+Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
-+Q_IMPORT_PLUGIN(QtQuick2Plugin)
-+Q_IMPORT_PLUGIN(QtQuickControls2Plugin)
-+Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
-+Q_IMPORT_PLUGIN(QEvdevKeyboardPlugin)
-+Q_IMPORT_PLUGIN(QEvdevMousePlugin)
-+Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)
-+Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)
-+Q_IMPORT_PLUGIN(QtQuickControls1Plugin)
-+Q_IMPORT_PLUGIN(QJpegPlugin)
-+Q_IMPORT_PLUGIN(QSvgPlugin)
-+Q_IMPORT_PLUGIN(QSvgIconPlugin)
-+Q_IMPORT_PLUGIN(QXcbGlxIntegrationPlugin)
-+Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)
-+Q_IMPORT_PLUGIN(QtGraphicalEffectsPrivatePlugin)
-+Q_IMPORT_PLUGIN(QtQmlModelsPlugin)
- /***************************************************************************
-  *   Copyright (C) 2009-2015 by Savoir-Faire Linux                         *
-  *   Author : Jérémy Quentin <jeremy.quentin@savoirfairelinux.com>         *
+diff --git a/src/callview/CMakeLists.txt b/src/callview/CMakeLists.txt
+index 425cc776..6994ddc3 100644
+--- a/src/callview/CMakeLists.txt
++++ b/src/callview/CMakeLists.txt
+@@ -46,7 +46,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
+ FIND_PACKAGE(KF5 REQUIRED COMPONENTS
+   I18n
+   Declarative
+-  Init
++  #Init
+ )
+ 
+ INCLUDE_DIRECTORIES(SYSTEM ${Qt5Widgets_INCLUDES} ${Qt5Core_INCLUDES} ${ringclient_INCLUDE_DIR})
+diff --git a/src/canvasindicators/CMakeLists.txt b/src/canvasindicators/CMakeLists.txt
+index 03d9cca9..395de518 100644
+--- a/src/canvasindicators/CMakeLists.txt
++++ b/src/canvasindicators/CMakeLists.txt
+@@ -45,7 +45,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
+ 
+ FIND_PACKAGE(KF5 REQUIRED COMPONENTS
+   I18n
+-  Init
++  #Init
+ )
+ 
+ INCLUDE_DIRECTORIES(SYSTEM ${Qt5Widgets_INCLUDES} ${Qt5Core_INCLUDES} ${ringclient_INCLUDE_DIR})
+diff --git a/src/klib/CMakeLists.txt b/src/klib/CMakeLists.txt
+index db9f58df..4e92e299 100644
+--- a/src/klib/CMakeLists.txt
++++ b/src/klib/CMakeLists.txt
+@@ -37,7 +37,7 @@ FIND_PACKAGE(KF5 REQUIRED COMPONENTS
+   Config
+   GuiAddons
+   I18n
+-  Init
++  #Init
+   WindowSystem
+   WidgetsAddons
+   XmlGui
+diff --git a/src/photoselector/CMakeLists.txt b/src/photoselector/CMakeLists.txt
+index 560b5ef2..08a93caf 100644
+--- a/src/photoselector/CMakeLists.txt
++++ b/src/photoselector/CMakeLists.txt
+@@ -30,7 +30,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
+ 
+ FIND_PACKAGE(KF5 REQUIRED COMPONENTS
+     I18n
+-    Init
++    #Init
+     Config
+     ConfigWidgets
+ )
+diff --git a/src/qmlwidgets/CMakeLists.txt b/src/qmlwidgets/CMakeLists.txt
+index 5010afc5..974de678 100644
+--- a/src/qmlwidgets/CMakeLists.txt
++++ b/src/qmlwidgets/CMakeLists.txt
+@@ -34,7 +34,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
+ 
+ FIND_PACKAGE(KF5 REQUIRED COMPONENTS
+     I18n
+-    Init
++    #Init
+     Config
+     ConfigWidgets
+ )
+diff --git a/src/timeline/CMakeLists.txt b/src/timeline/CMakeLists.txt
+index 5b8b8660..bdc9c2d4 100644
+--- a/src/timeline/CMakeLists.txt
++++ b/src/timeline/CMakeLists.txt
+@@ -44,7 +44,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
+ 
+ FIND_PACKAGE(KF5 REQUIRED COMPONENTS
+   I18n
+-  Init
++  #Init
+ )
+ 
+ INCLUDE_DIRECTORIES(SYSTEM ${Qt5Widgets_INCLUDES} ${Qt5Core_INCLUDES} ${ringclient_INCLUDE_DIR})
+diff --git a/src/wizard/CMakeLists.txt b/src/wizard/CMakeLists.txt
+index 370cbb3b..add9a370 100644
+--- a/src/wizard/CMakeLists.txt
++++ b/src/wizard/CMakeLists.txt
+@@ -46,7 +46,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
+ 
+ FIND_PACKAGE(KF5 REQUIRED COMPONENTS
+   I18n
+-  Init
++  #Init
+ )
+ 
+ INCLUDE_DIRECTORIES(SYSTEM ${Qt5Widgets_INCLUDES} ${Qt5Core_INCLUDES} ${ringclient_INCLUDE_DIR})

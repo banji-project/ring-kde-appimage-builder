@@ -133,7 +133,7 @@ ADD patches /bootstrap/patches
 
 RUN cd ring-daemon && git apply /bootstrap/patches/ring-daemon.patch
 RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
- CXXFLAGS="-Wno-error=unused-result -Wno-unused-result" CFLAGS="-Wno-error=unused-result -Wno-unused-result" ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
+ CXXFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" CFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
    --enable-opus --enable-zlib --enable-uuid --enable-uuid && make fetch-all -j8
 
 RUN emerge yasm
@@ -145,7 +145,7 @@ RUN emerge yasm
 #ENV CXXFLAGS="$CFLAGS"
 
 # Cross compile hack
-RUN cd ring-daemon/contrib/native && CXXFLAGS="-Wno-error=unused-result -Wno-unused-result" CFLAGS="-Wno-error=unused-result -Wno-unused-result" make -j8 || echo ignore2 #HACK
+RUN cd ring-daemon/contrib/native && CXXFLAGS="-Wno-error=unused-result -Wno-unused-result -Os -ffunction-sections -fdata-sections " CFLAGS="-Os -Wno-error=unused-result -Wno-unused-result -ffunction-sections -fdata-sections " make -j8 || echo ignore2 #HACK
 RUN cp /usr/share/libtool/build-aux/config.guess /ring-daemon/contrib/native/uuid/
 RUN cp /usr/share/libtool/build-aux/config.sub /ring-daemon/contrib/native/uuid/
 
@@ -159,7 +159,7 @@ RUN cd ring-daemon/contrib/native && make -j8
 
 # Compile the daemon. Pulse is disabled for now because it pulls
 # too many dependencies are cause libring to link to them...
-RUN cd ring-daemon &&  ./autogen.sh && CXXFLAGS="-Wno-error=unused-result -Wno-unused-result" CFLAGS="-Wno-error=unused-result -Wno-unused-result" ./configure --without-dbus \
+RUN cd ring-daemon &&  ./autogen.sh && CXXFLAGS="-ffunction-sections -fdata-sections -Os" ./configure --without-dbus \
  --enable-static --without-pulse --disable-vdpau --disable-vaapi \
  --disable-videotoolbox --disable-vda --disable-accel --disable-shared \
  --prefix=/opt/ring-kde.AppDir && make -j install && echo bar
