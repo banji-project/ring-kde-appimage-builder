@@ -7,6 +7,11 @@ set(CMAKE_BUILD_TYPE RELEASE)
 
 set(DISABLE_EXPORT ON)
 
+# Necessary for LTO
+set(CMAKE_AR "/usr/bin/gcc-ar")
+set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+set(CMAKE_CXX_ARCHIVE_FINISH true)
+
 ADD_DEFINITIONS(-DQT_STATIC)
 #    bash -c "'gcc -v 2>&1 | grep Target | cut -f2 -d\' \''"
 
@@ -21,14 +26,16 @@ RESULT_VARIABLE FFFF
 @ALL_KF5_DIR@
 
 # Try to force CMAKE not to overrride my will
-SET(CMAKE_CXX_FLAGS "-Os -fPIC -ffunction-sections -fdata-sections \
+SET(CMAKE_CXX_FLAGS "-Os -fPIC -flto=8 -ffunction-sections -fdata-sections \
  -fvisibility=hidden -fvisibility-inlines-hidden -Wl,--gc-sections \
  -Wl,--strip-all -Wl,--exclude-libs\
 ")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 
+# -Wl,--as-nneded
+
 set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -flto=8\
- -Wl,--gc-sections -Wl,--strip-all -Wl,--exclude-libs
+ -Wl,--gc-sections -Wl,--strip-all -Wl,--exclude-libs\
 ")
 
 # Force some extra static libs
@@ -59,7 +66,7 @@ set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
  ${CMAKE_BINARY_DIR}/libqt5pluginenabler.a \
 /ring-daemon/contrib/native/speex/libspeex/.libs/libspeex.a \
 /ring-daemon/contrib/native/opus/.libs/libopus.a \
--I /ring-daemon/src/ -I/ring-daemon/src/dring/  /ring-daemon/src/.libs/libring.a -L/ring-daemon/contrib/x86_64-pc-linux-gnu/lib -L/ring-daemon/contrib/x86_64-pc-linux-gnu/lib/ -lpjsua2-x86_64-pc-linux-gnu -lpjsua-x86_64-pc-linux-gnu -lpjsip-ua-x86_64-pc-linux-gnu -lpjsip-simple-x86_64-pc-linux-gnu -lpjsip-x86_64-pc-linux-gnu -lpjmedia-codec-x86_64-pc-linux-gnu -lpjmedia-videodev-x86_64-pc-linux-gnu -lpjmedia-audiodev-x86_64-pc-linux-gnu -lpjmedia-x86_64-pc-linux-gnu -lpjnath-x86_64-pc-linux-gnu -lpjlib-util-x86_64-pc-linux-gnu -lsrtp-x86_64-pc-linux-gnu -lpj-x86_64-pc-linux-gnu /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libuuid.a -lasound /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libsamplerate.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libsndfile.a -lyaml-cpp -ljsoncpp /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libupnp.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libthreadutil.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libixml.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libopendht.a -lpcre /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libspeexdsp.a -lcryptopp -lavdevice -lavformat -lavcodec -ldl -lxcb -lxcb-shm -lxcb-xfixes -lxcb-shape -lx264 -lvpx /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libspeex.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libopus.a -llzma -lbz2 -lswscale -lavutil -ludev -lnatpmp -lboost_random -lboost_system -lgsm -lrestbed /ring-daemon/contrib/native/opendht/src/.libs/libopendht.a -lpthread -largon2 /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libgnutls.a -lrt -lhogweed -lz /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libgmp.a -lidn2 -lnettle /ring-daemon/contrib/native/opus/.libs/libopus.a /ring-daemon/contrib/native/upnp/upnp/.libs/libupnp.a /ring-daemon/contrib/native/upnp/threadutil/.libs/libthreadutil.a /ring-daemon/contrib/native/upnp/ixml/.libs/libixml.a /ring-daemon/contrib/native/sndfile/src/.libs/libsndfile.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libFLAC.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libvorbisenc.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libvorbis.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libogg.a /ring-daemon/contrib/native/uuid/.libs/libuuid.a /ring-daemon/contrib/native/speex/libspeex/.libs/libspeex.a /ring-daemon/contrib/native/samplerate/src/.libs/libsamplerate.a /usr/lib/libXi.a /usr/lib/libXext.a -lm -pthread"
+-I /ring-daemon/src/ -I/ring-daemon/src/dring/  /ring-daemon/src/.libs/libring.a -L/ring-daemon/contrib/x86_64-pc-linux-gnu/lib -L/ring-daemon/contrib/x86_64-pc-linux-gnu/lib/ -lpjsua2-x86_64-pc-linux-gnu -lpjsua-x86_64-pc-linux-gnu -lpjsip-ua-x86_64-pc-linux-gnu -lpjsip-simple-x86_64-pc-linux-gnu -lpjsip-x86_64-pc-linux-gnu -lpjmedia-codec-x86_64-pc-linux-gnu -lpjmedia-videodev-x86_64-pc-linux-gnu -lpjmedia-audiodev-x86_64-pc-linux-gnu -lpjmedia-x86_64-pc-linux-gnu -lpjnath-x86_64-pc-linux-gnu -lpjlib-util-x86_64-pc-linux-gnu -lsrtp-x86_64-pc-linux-gnu -lpj-x86_64-pc-linux-gnu /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libuuid.a -lasound /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libsamplerate.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libsndfile.a -lyaml-cpp -ljsoncpp /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libupnp.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libthreadutil.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libixml.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libopendht.a -lpcre /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libspeexdsp.a -lcryptopp -lavdevice -lavformat -lavcodec -ldl -lxcb -lxcb-shm -lxcb-xfixes -lxcb-shape -lx264 -lvpx /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libspeex.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libopus.a -llzma -lbz2 -lswscale -lavutil -ludev -lnatpmp -lboost_random -lboost_system -lgsm -lrestbed /ring-daemon/contrib/native/opendht/src/.libs/libopendht.a -lpthread -largon2 /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libgnutls.a -lrt -lhogweed -lz /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libgmp.a -lnettle /ring-daemon/contrib/native/opus/.libs/libopus.a /ring-daemon/contrib/native/upnp/upnp/.libs/libupnp.a /ring-daemon/contrib/native/upnp/threadutil/.libs/libthreadutil.a /ring-daemon/contrib/native/upnp/ixml/.libs/libixml.a /ring-daemon/contrib/native/sndfile/src/.libs/libsndfile.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libFLAC.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libvorbisenc.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libvorbis.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libogg.a /ring-daemon/contrib/native/uuid/.libs/libuuid.a /ring-daemon/contrib/native/speex/libspeex/.libs/libspeex.a /ring-daemon/contrib/native/samplerate/src/.libs/libsamplerate.a /usr/lib/libXi.a /usr/lib/libXext.a -lm -pthread"
 )
 
 set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \

@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index dbf9ed3..7f67abf 100644
+index dbf9ed3..bc50ac3 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -14,7 +14,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${ECM_MODULE_PATH} ${ECM
@@ -11,12 +11,21 @@ index dbf9ed3..7f67abf 100644
  include(KDEInstallDirs)
  include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
  include(KDECMakeSettings)
-@@ -28,6 +28,8 @@ find_package(KF5WindowSystem ${KF5_DEP_VERSION} REQUIRED)
+@@ -22,12 +22,16 @@ include(KDECMakeSettings)
+ find_package(KF5Config ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5I18n ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5IconThemes ${KF5_DEP_VERSION} REQUIRED)
+-find_package(KF5KIO ${KF5_DEP_VERSION} REQUIRED)
++#find_package(KF5KIO ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5WidgetsAddons ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5WindowSystem ${KF5_DEP_VERSION} REQUIRED)
  find_package(KF5GlobalAccel ${KF5_DEP_VERSION} REQUIRED)
  find_package(KF5GuiAddons ${KF5_DEP_VERSION} REQUIRED)
  find_package(KF5Package ${KF5_DEP_VERSION} REQUIRED)
 +find_package(KF5Archive ${KF5_DEP_VERSION} REQUIRED)
 +find_package(KF5DBusAddons ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5ItemViews ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5ConfigWidgets ${KF5_DEP_VERSION} REQUIRED)
  
  #########################################################################
  
@@ -38,6 +47,171 @@ index 2d1fed0..0d0ce78 100644
  
  ecm_add_test(columnproxymodeltest.cpp
      ../src/qmlcontrols/kquickcontrolsaddons/columnproxymodel.cpp
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 13aef05..4cbb9cb 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-if(KF5Config_FOUND AND KF5I18n_FOUND AND KF5IconThemes_FOUND AND KF5KIO_FOUND)
++if(KF5Config_FOUND AND KF5I18n_FOUND AND KF5IconThemes_FOUND)
+     add_subdirectory(kdeclarative)
+ endif()
+ 
+diff --git a/src/kdeclarative/CMakeLists.txt b/src/kdeclarative/CMakeLists.txt
+index da2e673..0149421 100644
+--- a/src/kdeclarative/CMakeLists.txt
++++ b/src/kdeclarative/CMakeLists.txt
+@@ -5,7 +5,7 @@ set(kdeclarative_SRCS
+   qmlobjectsharedengine.cpp
+   kdeclarative.cpp
+   private/kiconprovider.cpp
+-  private/kioaccessmanagerfactory.cpp
++#  private/kioaccessmanagerfactory.cpp
+   private/qmlobject_p.h
+ )
+ 
+@@ -21,10 +21,11 @@ target_link_libraries(KF5Declarative
+     KF5::ConfigCore # KCoreConfigSkeleton, in ConfigPropertyMap
+     Qt5::Qml
+     KF5::Package
++    KF5::ItemViews
++    KF5::ConfigWidgets
+   PRIVATE
+     Qt5::Quick  #QQuickImageProvider
+     KF5::I18n       #i18n bindings
+-    KF5::KIOWidgets     #KIO::AccessManager
+     KF5::IconThemes #KIconProvider
+ )
+ target_include_directories(KF5Declarative PUBLIC "$<BUILD_INTERFACE:${KDeclarative_BINARY_DIR};${CMAKE_CURRENT_BINARY_DIR}>")
+diff --git a/src/kdeclarative/kdeclarative.cpp b/src/kdeclarative/kdeclarative.cpp
+index 6609716..8a5599e 100644
+--- a/src/kdeclarative/kdeclarative.cpp
++++ b/src/kdeclarative/kdeclarative.cpp
+@@ -20,7 +20,7 @@
+ #include "kdeclarative.h"
+ #include "private/kdeclarative_p.h"
+ #include "private/kiconprovider_p.h"
+-#include "private/kioaccessmanagerfactory_p.h"
++//#include "private/kioaccessmanagerfactory_p.h"
+ #include "qmlobject.h"
+ 
+ #include <QCoreApplication>
+@@ -75,10 +75,10 @@ void KDeclarative::initialize()
+ void KDeclarative::setupBindings()
+ {
+     //get rid of stock network access manager factory
+-    QQmlNetworkAccessManagerFactory *factory = d->declarativeEngine.data()->networkAccessManagerFactory();
++/*    QQmlNetworkAccessManagerFactory *factory = d->declarativeEngine.data()->networkAccessManagerFactory();
+     d->declarativeEngine.data()->setNetworkAccessManagerFactory(nullptr);
+     delete factory;
+-    d->declarativeEngine.data()->setNetworkAccessManagerFactory(new KIOAccessManagerFactory());
++  */  //d->declarativeEngine.data()->setNetworkAccessManagerFactory(new KIOAccessManagerFactory());
+ 
+     /*Create a context object for the root qml context.
+       in this way we can register global functions, in this case the i18n() family*/
+diff --git a/src/kdeclarative/private/kioaccessmanagerfactory.cpp b/src/kdeclarative/private/kioaccessmanagerfactory.cpp
+deleted file mode 100644
+index e36df3c..0000000
+--- a/src/kdeclarative/private/kioaccessmanagerfactory.cpp
++++ /dev/null
+@@ -1,39 +0,0 @@
+-/*
+- *   Copyright 2010 Marco Martin <notmart@gmail.com>
+- *
+- *   This program is free software; you can redistribute it and/or modify
+- *   it under the terms of the GNU Library General Public License as
+- *   published by the Free Software Foundation; either version 2, or
+- *   (at your option) any later version.
+- *
+- *   This program is distributed in the hope that it will be useful,
+- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *   GNU General Public License for more details
+- *
+- *   You should have received a copy of the GNU Library General Public
+- *   License along with this program; if not, write to the
+- *   Free Software Foundation, Inc.,
+- *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+- */
+-
+-#include "kioaccessmanagerfactory_p.h"
+-#include <kio/accessmanager.h>
+-
+-namespace KDeclarative {
+-
+-KIOAccessManagerFactory::KIOAccessManagerFactory()
+-    : QQmlNetworkAccessManagerFactory()
+-{
+-}
+-
+-KIOAccessManagerFactory::~KIOAccessManagerFactory()
+-{
+-}
+-
+-QNetworkAccessManager *KIOAccessManagerFactory::create(QObject *parent)
+-{
+-    return new KIO::AccessManager(parent);
+-}
+-
+-}
+diff --git a/src/kdeclarative/private/kioaccessmanagerfactory_p.h b/src/kdeclarative/private/kioaccessmanagerfactory_p.h
+deleted file mode 100644
+index 288c82f..0000000
+--- a/src/kdeclarative/private/kioaccessmanagerfactory_p.h
++++ /dev/null
+@@ -1,37 +0,0 @@
+-/*
+- *   Copyright 2010 Marco Martin <notmart@gmail.com>
+- *
+- *   This program is free software; you can redistribute it and/or modify
+- *   it under the terms of the GNU Library General Public License as
+- *   published by the Free Software Foundation; either version 2, or
+- *   (at your option) any later version.
+- *
+- *   This program is distributed in the hope that it will be useful,
+- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *   GNU General Public License for more details
+- *
+- *   You should have received a copy of the GNU Library General Public
+- *   License along with this program; if not, write to the
+- *   Free Software Foundation, Inc.,
+- *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+- */
+-
+-#ifndef KIOACCESSMANAGERFACTORY_H
+-#define KIOACCESSMANAGERFACTORY_H
+-
+-#include <QQmlNetworkAccessManagerFactory>
+-
+-namespace KDeclarative {
+-
+-class KIOAccessManagerFactory : public QQmlNetworkAccessManagerFactory
+-{
+-public:
+-    KIOAccessManagerFactory();
+-    ~KIOAccessManagerFactory();
+-    QNetworkAccessManager *create(QObject *parent) Q_DECL_OVERRIDE;
+-};
+-
+-}
+-
+-#endif
+diff --git a/src/qmlcontrols/CMakeLists.txt b/src/qmlcontrols/CMakeLists.txt
+index f6662f3..375fad3 100644
+--- a/src/qmlcontrols/CMakeLists.txt
++++ b/src/qmlcontrols/CMakeLists.txt
+@@ -11,10 +11,6 @@ if(KF5CoreAddons_FOUND)
+ endif()
+ 
+ 
+-if(KF5KIO_FOUND)
+-    add_subdirectory(kioplugin)
+-endif()
+-
+ if (KF5WindowSystem_FOUND)
+     add_subdirectory(kwindowsystemplugin)
+ endif()
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
 index 08e535f..ace8422 100644
 --- a/tests/CMakeLists.txt

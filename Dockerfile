@@ -83,11 +83,12 @@ RUN cd qt-e* &&\
    -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts \
    -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors \
    -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwayland \
-   -prefix /opt/usr -no-glib -qt-zlib -qt-freetype #-ltcg
+   -prefix /opt/usr -no-glib -qt-zlib -qt-freetype -ltcg
 
 # Build Qt, this is long
 RUN cd qt-e* && make -j8
 RUN cd qt-e* && make install
+RUN rm -rf qt-e # Keep the docker image smaller
 
 # Not very clean, but running tests in this environment hits a lot of
 # bugs due to the unexpected static linkage.

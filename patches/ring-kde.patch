@@ -1,68 +1,84 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7bb635b..254e079 100644
+index 6773145c..bcfffc7e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -94,6 +94,7 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
+@@ -96,6 +96,8 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
    PrintSupport
    QuickControls2
    Quick
-+TextToSpeech X11Extras Concurrent
++  Concurrent
++  X11Extras
  )
  
  #FIND_PACKAGE(Qt5TextToSpeech ${QT_MIN_VERSION} QUIET)
-@@ -120,6 +121,10 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
+@@ -118,6 +120,9 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
+   XmlGui
+   Notifications
+   IconThemes
++  ItemViews
++  KIO
++  Archive
+   Crash
    NotifyConfig
    GlobalAccel
-   Declarative
-+ Archive
-+ItemViews
-+TextWidgets
-+KIO
- )
+diff --git a/src/actioncollection.cpp b/src/actioncollection.cpp
+index 0ca68a3f..069ca52f 100644
+--- a/src/actioncollection.cpp
++++ b/src/actioncollection.cpp
+@@ -29,11 +29,11 @@
+ #include <KLocalizedString>
+ #include <kmessagebox.h>
+ #include <KStandardAction>
+-#include <KShortcutsDialog>
++//#include <KShortcutsDialog>
+ #include <KActionCollection>
+ #include <KEditToolBar>
+ #include <KSharedConfig>
+-#include <KNotifyConfigWidget>
++//#include <KNotifyConfigWidget>
+ #include <KGlobalAccel>
  
- FIND_PACKAGE(KF5 "${AKO_DEP_VERSION}" QUIET COMPONENTS
+ //Ring
+@@ -336,7 +336,7 @@ void ActionCollection::configureRing()
+ ///Display the shortcuts dialog
+ void ActionCollection::showShortCutEditor()
+ {
+-   KShortcutsDialog::configure( RingApplication::instance()->mainWindow()->actionCollection() );
++   //KShortcutsDialog::configure( RingApplication::instance()->mainWindow()->actionCollection() );
+ }
+ 
+ ///Display the shortcuts dialog
+@@ -348,7 +348,7 @@ void ActionCollection::showDirectory()
+ ///Display the notification manager
+ void ActionCollection::showNotificationEditor()
+ {
+-   KNotifyConfigWidget::configure(RingApplication::instance()->mainWindow(), QStringLiteral("ring-kde"));
++//   KNotifyConfigWidget::configure(RingApplication::instance()->mainWindow(), QStringLiteral("ring-kde"));
+ }
+ 
+ ///Show the toolbar editor
 diff --git a/src/main.cpp b/src/main.cpp
-index 4dc41f4..8602baa 100644
+index 98a023ea..87e0c3a4 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -73,10 +85,6 @@ int main(int argc, char **argv)
-       //Only start the application once
- #ifdef Q_OS_LINUX
- #ifndef DISABLE_KDBUS_SERVICE
--      KDBusService service(KDBusService::Unique);
--      QObject::connect(&service, &KDBusService::activateActionRequested, Cmd::instance(), &Cmd::slotActivateActionRequested);
--      QObject::connect(&service, &KDBusService::activateRequested      , Cmd::instance(), &Cmd::slotActivateRequested      );
--      QObject::connect(&service, &KDBusService::openRequested          , Cmd::instance(), &Cmd::slotOpenRequested          );
- #endif
- #endif
- 
-diff --git a/src/ringapplication.cpp b/src/ringapplication.cpp
-index 9aaa2b3..393f495 100644
---- a/src/ringapplication.cpp
-+++ b/src/ringapplication.cpp
-@@ -473,7 +473,8 @@ FancyMainWindow* RingApplication::mainWindow() const
- void RingApplication::daemonTimeout()
- {
-    if ((!CallModel::instance().isConnected()) || (!CallModel::instance().isValid())) {
--      KMessageBox::error(mainWindow(), ErrorMessage::NO_DAEMON_ERROR);
-+      //KMessageBox::error(mainWindow(), ErrorMessage::NO_DAEMON_ERROR);
-+      qDebug() << "\n\nNO DEADMON!!!";
-       exit(1);
-    }
- }
-@@ -522,12 +523,13 @@ bool RingApplication::notify (QObject* receiver, QEvent* e)
-       QTimer::singleShot(2500, this, &RingApplication::daemonTimeout);
-    }
-    catch (const QString& errorMessage) {
--      KMessageBox::error(mainWindow(),errorMessage);
-+       qDebug() << "\n\n\nERROR:" << errorMessage;
-+      //KMessageBox::error(mainWindow(),errorMessage);
-       QTimer::singleShot(2500, this, &RingApplication::daemonTimeout);
-    }
-    catch (...) {
-       qDebug() << ErrorMessage::GENERIC_ERROR;
--      KMessageBox::error(mainWindow(),ErrorMessage::GENERIC_ERROR);
-+      //KMessageBox::error(mainWindow(),ErrorMessage::GENERIC_ERROR);
-       QTimer::singleShot(2500, this, &RingApplication::daemonTimeout);
-    }
-    return false;
+@@ -1,3 +1,20 @@
++#include <QtPlugin>
++Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
++Q_IMPORT_PLUGIN(QtQuick2Plugin)
++Q_IMPORT_PLUGIN(QtQuickControls2Plugin)
++Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
++Q_IMPORT_PLUGIN(QEvdevKeyboardPlugin)
++Q_IMPORT_PLUGIN(QEvdevMousePlugin)
++Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)
++Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)
++Q_IMPORT_PLUGIN(QtQuickControls1Plugin)
++Q_IMPORT_PLUGIN(QJpegPlugin)
++Q_IMPORT_PLUGIN(QSvgPlugin)
++Q_IMPORT_PLUGIN(QSvgIconPlugin)
++Q_IMPORT_PLUGIN(QXcbGlxIntegrationPlugin)
++Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)
++Q_IMPORT_PLUGIN(QtGraphicalEffectsPrivatePlugin)
++Q_IMPORT_PLUGIN(QtQmlModelsPlugin)
+ /***************************************************************************
+  *   Copyright (C) 2009-2015 by Savoir-Faire Linux                         *
+  *   Author : Jérémy Quentin <jeremy.quentin@savoirfairelinux.com>         *

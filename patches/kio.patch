@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 2fefcd0..7d5357d 100644
+index 2fefcd01..7d5357dd 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -58,6 +58,10 @@ find_package(KF5ItemViews ${KF5_DEP_VERSION} REQUIRED)
@@ -23,7 +23,7 @@ index 2fefcd0..7d5357d 100644
  find_package(GSSAPI)
  set_package_properties(GSSAPI PROPERTIES DESCRIPTION "Allows KIO to make use of certain HTTP authentication services"
 diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
-index 791eb78..16c53f9 100644
+index 791eb786..16c53f91 100644
 --- a/autotests/CMakeLists.txt
 +++ b/autotests/CMakeLists.txt
 @@ -3,6 +3,14 @@ if(POLICY CMP0028)
@@ -42,7 +42,7 @@ index 791eb78..16c53f9 100644
  
  add_subdirectory(http)
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 8f09239..5bd2334 100644
+index 8f092397..5bd23344 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -5,7 +5,7 @@ add_subdirectory(protocoltojson)
@@ -55,7 +55,7 @@ index 8f09239..5bd2334 100644
  
  if (NOT KIOCORE_ONLY)
 diff --git a/src/core/authinfo.cpp b/src/core/authinfo.cpp
-index e7d0bb5..d866de0 100644
+index e7d0bb53..d866de01 100644
 --- a/src/core/authinfo.cpp
 +++ b/src/core/authinfo.cpp
 @@ -63,7 +63,7 @@ public:
@@ -95,7 +95,7 @@ index e7d0bb5..d866de0 100644
      QDBusVariant value;
      int flag;
 diff --git a/src/core/authinfo.h b/src/core/authinfo.h
-index 98d3649..330b83a 100644
+index 98d36498..330b83ab 100644
 --- a/src/core/authinfo.h
 +++ b/src/core/authinfo.h
 @@ -60,11 +60,11 @@ class AuthInfoPrivate;
@@ -136,7 +136,7 @@ index 98d3649..330b83a 100644
   * A Singleton class that provides access to passwords
   * stored in .netrc files for automatic login purposes.
 diff --git a/src/ioslaves/trash/tests/CMakeLists.txt b/src/ioslaves/trash/tests/CMakeLists.txt
-index f913892..76a4d7f 100644
+index f9138925..76a4d7f0 100644
 --- a/src/ioslaves/trash/tests/CMakeLists.txt
 +++ b/src/ioslaves/trash/tests/CMakeLists.txt
 @@ -1,5 +1,12 @@
@@ -153,7 +153,7 @@ index f913892..76a4d7f 100644
  
  set(testtrash_SRCS
 diff --git a/src/kpasswdserver/autotests/CMakeLists.txt b/src/kpasswdserver/autotests/CMakeLists.txt
-index 3c7e637..6183518 100644
+index 3c7e6374..61835185 100644
 --- a/src/kpasswdserver/autotests/CMakeLists.txt
 +++ b/src/kpasswdserver/autotests/CMakeLists.txt
 @@ -1,5 +1,12 @@
@@ -170,7 +170,7 @@ index 3c7e637..6183518 100644
   kpasswdservertest.cpp
   ../kpasswdserver.cpp
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
-index bc94a4a..9ba204b 100644
+index bc94a4ae..9ba204b6 100644
 --- a/tests/CMakeLists.txt
 +++ b/tests/CMakeLists.txt
 @@ -4,6 +4,13 @@ endif()

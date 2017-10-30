@@ -7,10 +7,15 @@ set(CMAKE_BUILD_TYPE RELEASE)
 
 ADD_DEFINITIONS(-DQT_STATIC)
 
+# Necessary for LTO
+set(CMAKE_AR "/usr/bin/gcc-ar")
+set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+set(CMAKE_CXX_ARCHIVE_FINISH true)
+
 # The parent script will add many paths here
 @ALL_KF5_DIR@
 
-SET(CMAKE_CXX_FLAGS "-Os")
+SET(CMAKE_CXX_FLAGS "-Os -fPIC -ffunction-sections -fdata-sections")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 
 #SET(CMAKE_CXX_FLAGS "-Os -flto=8 -ffunction-sections -fdata-sections -fvisibility=hidden\
