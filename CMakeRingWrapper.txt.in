@@ -29,13 +29,15 @@ RESULT_VARIABLE FFFF
 SET(CMAKE_CXX_FLAGS "-Os -fPIC -flto=8 -ffunction-sections -fdata-sections \
  -fvisibility=hidden -fvisibility-inlines-hidden -Wl,--gc-sections \
  -Wl,--strip-all -Wl,--exclude-libs\
+ -Wl,--as-needed\
 ")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 
-# -Wl,--as-nneded
+# -Wl,--as-needed
 
 set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -flto=8\
  -Wl,--gc-sections -Wl,--strip-all -Wl,--exclude-libs\
+ -Wl,--as-needed\
 ")
 
 # Force some extra static libs
@@ -87,7 +89,7 @@ option(BUILD_WITH_QTSCRIPT OFF)
 
 if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde)
     execute_process(COMMAND
-        git clone https://anongit.kde.org/ring-kde --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/
+        git clone https://anongit.kde.org/ring-kde --branch kirigami ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/
     )
 else()
 #    execute_process(COMMAND

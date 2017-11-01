@@ -1,8 +1,34 @@
+diff --git a/contrib/src/cryptopp/rules.mak b/contrib/src/cryptopp/rules.mak
+index bf2a475b4..ff98cb691 100644
+--- a/contrib/src/cryptopp/rules.mak
++++ b/contrib/src/cryptopp/rules.mak
+@@ -16,7 +16,13 @@ endif
+ 
+ CRYPTOPP_CMAKECONF := -DBUILD_TESTING=Off \
+ 		-DBUILD_SHARED=Off \
+-		-DCMAKE_INSTALL_LIBDIR=lib
++		-DCMAKE_INSTALL_LIBDIR=lib \
++                -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                -DCMAKE_C_FLAGS="$(CXXFLAGS)" \
++                -DCMAKE_C_FLAGS_RELEASE="$(CXXFLAGS)" \
++                -DCMAKE_AR=/usr/bin/gcc-ar \
++                -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                -DCMAKE_CXX_ARCHIVE_FINISH=true
+ 
+ $(TARBALLS)/cryptopp-$(CRYPTOPP_VERSION).tar.gz:
+ 	$(call download,$(CRYPTOPP_URL))
+@@ -33,5 +39,5 @@ endif
+ .cryptopp: cryptopp toolchain.cmake
+ 	cd $< && rm GNUmakefile*
+ 	cd $< && $(HOSTVARS) $(CMAKE) . $(CRYPTOPP_CMAKECONF)
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 5e62a77..262ada1 100644
+index f7e02798a..b16e13c14 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -119,13 +119,8 @@ FFMPEGCONF += \
+@@ -121,13 +121,8 @@ FFMPEGCONF += \
  	--target-os=linux \
  	--enable-indev=v4l2 \
  	--enable-indev=xcbgrab \
@@ -13,8 +39,119 @@ index 5e62a77..262ada1 100644
 -	--enable-hwaccel=h264_vaapi \
 -	--enable-hwaccel=mpeg4_vaapi \
 -	--enable-hwaccel=h263_vaapi
-+	--disable-vdpau \
-+	--disable-vaapi
++        --disable-vdpau \
++        --disable-vaapi
  endif
  endif
  
+diff --git a/contrib/src/jsoncpp/rules.mak b/contrib/src/jsoncpp/rules.mak
+index 5be14e876..e19ae86fe 100644
+--- a/contrib/src/jsoncpp/rules.mak
++++ b/contrib/src/jsoncpp/rules.mak
+@@ -10,7 +10,15 @@ endif
+ 
+ JSONCPP_CMAKECONF := -DBUILD_STATIC_LIBS:BOOL=ON \
+                      -DBUILD_SHARED_LIBS:BOOL=OFF \
+-                     -DJSONCPP_WITH_TESTS:BOOL=OFF
++                     -DJSONCPP_WITH_TESTS:BOOL=OFF \
++                     -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++                     -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                     -DCMAKE_C_FLAGS="$(CXXFLAGS)" \
++                     -DCMAKE_C_FLAGS_RELEASE="$(CXXFLAGS)" \
++                     -DCMAKE_AR=/usr/bin/gcc-ar \
++                     -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                     -DCMAKE_CXX_ARCHIVE_FINISH=true
++
+ 
+ $(TARBALLS)/jsoncpp-$(JSONCPP_VERSION).tar.gz:
+ 	$(call download,$(JSONCPP_URL))
+@@ -23,5 +31,5 @@ jsoncpp: jsoncpp-$(JSONCPP_VERSION).tar.gz .sum-jsoncpp
+ 
+ .jsoncpp: jsoncpp toolchain.cmake
+ 	cd $< && $(HOSTVARS) $(CMAKE) . ${JSONCPP_CMAKECONF}
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@
+diff --git a/contrib/src/msgpack/rules.mak b/contrib/src/msgpack/rules.mak
+index dc34930dc..b1c39483d 100644
+--- a/contrib/src/msgpack/rules.mak
++++ b/contrib/src/msgpack/rules.mak
+@@ -10,7 +10,15 @@ endif
+ MSGPACK_CMAKECONF := -DMSGPACK_CXX11=ON \
+ 		-DMSGPACK_BUILD_EXAMPLES=OFF \
+ 		-DMSGPACK_ENABLE_SHARED=OFF \
+-		-DCMAKE_INSTALL_LIBDIR=lib
++		-DCMAKE_INSTALL_LIBDIR=lib \
++                -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++                -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                -DCMAKE_C_FLAGS="$(CXXFLAGS)" \
++                -DCMAKE_C_FLAGS_RELEASE="$(CXXFLAGS)" \
++                -DCMAKE_AR=/usr/bin/gcc-ar \
++                -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                -DCMAKE_CXX_ARCHIVE_FINISH=true
++
+ 
+ $(TARBALLS)/msgpack-c-$(MSGPACK_VERSION).tar.gz:
+ 	$(call download,$(MSGPACK_URL))
+@@ -25,5 +33,5 @@ msgpack: msgpack-c-$(MSGPACK_VERSION).tar.gz .sum-msgpack
+ 
+ .msgpack: msgpack toolchain.cmake
+ 	cd $< && $(HOSTVARS) $(CMAKE) . $(MSGPACK_CMAKECONF)
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@
+diff --git a/contrib/src/restbed/rules.mak b/contrib/src/restbed/rules.mak
+index ac48aea3f..30bb33eda 100644
+--- a/contrib/src/restbed/rules.mak
++++ b/contrib/src/restbed/rules.mak
+@@ -38,7 +38,13 @@ RESTBED_CONF = -DBUILD_TESTS=NO \
+ 			-DBUILD_SSL=NO \
+ 			-DBUILD_SHARED=NO \
+ 			-DCMAKE_INSTALL_PREFIX=$(PREFIX) \
+-			-DCMAKE_INSTALL_LIBDIR=lib
++			-DCMAKE_INSTALL_LIBDIR=lib \
++                        -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++                        -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                        -DCMAKE_AR=/usr/bin/gcc-ar \
++                        -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                        -DCMAKE_CXX_ARCHIVE_FINISH=true
++
+ 
+ $(TARBALLS)/kashmir.tar.gz:
+ 	$(call download,https://github.com/Corvusoft/kashmir-dependency/archive/master.tar.gz)
+@@ -54,7 +60,7 @@ restbed: restbed-$(RESTBED_VERSION).tar.gz kashmir.tar.gz .sum-restbed
+ 
+ .restbed: restbed toolchain.cmake
+ 	cd $< && $(HOSTVARS) $(CMAKE) $(RESTBED_CONF) .
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@
+ 
+ .sum-restbed: restbed-$(RESTBED_VERSION).tar.gz
+diff --git a/contrib/src/yaml-cpp/rules.mak b/contrib/src/yaml-cpp/rules.mak
+index 8ea84c3e5..8b6775929 100644
+--- a/contrib/src/yaml-cpp/rules.mak
++++ b/contrib/src/yaml-cpp/rules.mak
+@@ -11,7 +11,14 @@ endif
+ YAML_CPP_CMAKECONF := -DBUILD_STATIC:BOOL=ON \
+                       -DBUILD_SHARED:BOOL=OFF \
+                       -DYAML_CPP_BUILD_TOOLS:BOOL=OFF \
+-                      -DBUILD_SHARED_LIBS:BOOL=OFF
++                      -DBUILD_SHARED_LIBS:BOOL=OFF \
++                      -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++                      -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                      -DCMAKE_C_FLAGS="$(CXXFLAGS)" \
++                      -DCMAKE_C_FLAGS_RELEASE="$(CXXFLAGS)" \
++                      -DCMAKE_AR=/usr/bin/gcc-ar \
++                      -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                      -DCMAKE_CXX_ARCHIVE_FINISH=true
+ 
+ $(TARBALLS)/yaml-cpp-$(YAML_CPP_VERSION).tar.gz:
+ 	$(call download,$(YAML_CPP_URL))
+@@ -25,5 +32,5 @@ yaml-cpp: yaml-cpp-$(YAML_CPP_VERSION).tar.gz .sum-yaml-cpp
+ 
+ .yaml-cpp: yaml-cpp toolchain.cmake
+ 	cd $< && $(HOSTVARS) $(CMAKE) . $(YAML_CPP_CMAKECONF)
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@

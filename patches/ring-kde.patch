@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 6773145c..1a1fee99 100644
+index 3f15aa36..8ead2a2d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -96,6 +96,8 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
@@ -11,146 +11,40 @@ index 6773145c..1a1fee99 100644
  )
  
  #FIND_PACKAGE(Qt5TextToSpeech ${QT_MIN_VERSION} QUIET)
-@@ -113,11 +115,14 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
-   GuiAddons
-   DBusAddons
-   I18n
--  Init
-+  #Init
-   WindowSystem
-   XmlGui
-   Notifications
-   IconThemes
-+  ItemViews
-+  #KIO
-+  Archive
-   Crash
+@@ -121,7 +123,10 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
    NotifyConfig
    GlobalAccel
-diff --git a/src/actioncollection.cpp b/src/actioncollection.cpp
-index 0ca68a3f..069ca52f 100644
---- a/src/actioncollection.cpp
-+++ b/src/actioncollection.cpp
-@@ -29,11 +29,11 @@
- #include <KLocalizedString>
- #include <kmessagebox.h>
- #include <KStandardAction>
--#include <KShortcutsDialog>
-+//#include <KShortcutsDialog>
- #include <KActionCollection>
- #include <KEditToolBar>
- #include <KSharedConfig>
--#include <KNotifyConfigWidget>
-+//#include <KNotifyConfigWidget>
- #include <KGlobalAccel>
- 
- //Ring
-@@ -336,7 +336,7 @@ void ActionCollection::configureRing()
- ///Display the shortcuts dialog
- void ActionCollection::showShortCutEditor()
- {
--   KShortcutsDialog::configure( RingApplication::instance()->mainWindow()->actionCollection() );
-+   //KShortcutsDialog::configure( RingApplication::instance()->mainWindow()->actionCollection() );
- }
- 
- ///Display the shortcuts dialog
-@@ -348,7 +348,7 @@ void ActionCollection::showDirectory()
- ///Display the notification manager
- void ActionCollection::showNotificationEditor()
- {
--   KNotifyConfigWidget::configure(RingApplication::instance()->mainWindow(), QStringLiteral("ring-kde"));
-+//   KNotifyConfigWidget::configure(RingApplication::instance()->mainWindow(), QStringLiteral("ring-kde"));
- }
- 
- ///Show the toolbar editor
-diff --git a/src/callview/CMakeLists.txt b/src/callview/CMakeLists.txt
-index 425cc776..6994ddc3 100644
---- a/src/callview/CMakeLists.txt
-+++ b/src/callview/CMakeLists.txt
-@@ -46,7 +46,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
- FIND_PACKAGE(KF5 REQUIRED COMPONENTS
-   I18n
    Declarative
--  Init
-+  #Init
+-  Kirigami2
++  #Kirigami2
++  ItemViews
++  Archive
++
  )
  
- INCLUDE_DIRECTORIES(SYSTEM ${Qt5Widgets_INCLUDES} ${Qt5Core_INCLUDES} ${ringclient_INCLUDE_DIR})
-diff --git a/src/canvasindicators/CMakeLists.txt b/src/canvasindicators/CMakeLists.txt
-index 03d9cca9..395de518 100644
---- a/src/canvasindicators/CMakeLists.txt
-+++ b/src/canvasindicators/CMakeLists.txt
-@@ -45,7 +45,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
- 
- FIND_PACKAGE(KF5 REQUIRED COMPONENTS
-   I18n
--  Init
-+  #Init
+ FIND_PACKAGE(KF5 "${AKO_DEP_VERSION}" QUIET COMPONENTS
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index e48fe41e..438e56ef 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -459,7 +459,6 @@ TARGET_LINK_LIBRARIES(ring-kde
+   KF5::NotifyConfig
+   KF5::GlobalAccel
+   KF5::Declarative
+-  KF5::Kirigami2
  )
  
- INCLUDE_DIRECTORIES(SYSTEM ${Qt5Widgets_INCLUDES} ${Qt5Core_INCLUDES} ${ringclient_INCLUDE_DIR})
-diff --git a/src/klib/CMakeLists.txt b/src/klib/CMakeLists.txt
-index db9f58df..4e92e299 100644
---- a/src/klib/CMakeLists.txt
-+++ b/src/klib/CMakeLists.txt
-@@ -37,7 +37,7 @@ FIND_PACKAGE(KF5 REQUIRED COMPONENTS
-   Config
-   GuiAddons
-   I18n
--  Init
-+  #Init
-   WindowSystem
-   WidgetsAddons
-   XmlGui
-diff --git a/src/photoselector/CMakeLists.txt b/src/photoselector/CMakeLists.txt
-index 560b5ef2..08a93caf 100644
---- a/src/photoselector/CMakeLists.txt
-+++ b/src/photoselector/CMakeLists.txt
-@@ -30,7 +30,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
- 
- FIND_PACKAGE(KF5 REQUIRED COMPONENTS
-     I18n
--    Init
-+    #Init
-     Config
-     ConfigWidgets
- )
-diff --git a/src/qmlwidgets/CMakeLists.txt b/src/qmlwidgets/CMakeLists.txt
-index 5010afc5..974de678 100644
---- a/src/qmlwidgets/CMakeLists.txt
-+++ b/src/qmlwidgets/CMakeLists.txt
-@@ -34,7 +34,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
- 
- FIND_PACKAGE(KF5 REQUIRED COMPONENTS
-     I18n
--    Init
-+    #Init
-     Config
-     ConfigWidgets
- )
+ IF (Qt5TextToSpeech_FOUND)
 diff --git a/src/timeline/CMakeLists.txt b/src/timeline/CMakeLists.txt
-index 5b8b8660..bdc9c2d4 100644
+index 3e32cf3d..120232d0 100644
 --- a/src/timeline/CMakeLists.txt
 +++ b/src/timeline/CMakeLists.txt
-@@ -44,7 +44,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
- 
- FIND_PACKAGE(KF5 REQUIRED COMPONENTS
-   I18n
--  Init
-+  #Init
+@@ -79,7 +79,7 @@ target_link_libraries( libtimeline
+    KF5::WidgetsAddons
+    KF5::ConfigCore
+    KF5::ConfigGui
+-   KF5::Kirigami2
++   #KF5::Kirigami2
  )
  
- INCLUDE_DIRECTORIES(SYSTEM ${Qt5Widgets_INCLUDES} ${Qt5Core_INCLUDES} ${ringclient_INCLUDE_DIR})
-diff --git a/src/wizard/CMakeLists.txt b/src/wizard/CMakeLists.txt
-index 370cbb3b..add9a370 100644
---- a/src/wizard/CMakeLists.txt
-+++ b/src/wizard/CMakeLists.txt
-@@ -46,7 +46,7 @@ FIND_PACKAGE(Qt5 CONFIG REQUIRED
- 
- FIND_PACKAGE(KF5 REQUIRED COMPONENTS
-   I18n
--  Init
-+  #Init
- )
- 
- INCLUDE_DIRECTORIES(SYSTEM ${Qt5Widgets_INCLUDES} ${Qt5Core_INCLUDES} ${ringclient_INCLUDE_DIR})
+ SET( libtimeline_LIB_HDRS

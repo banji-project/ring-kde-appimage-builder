@@ -159,10 +159,10 @@ RUN cd ring-daemon/contrib/native && make -j8
 
 # Compile the daemon. Pulse is disabled for now because it pulls
 # too many dependencies are cause libring to link to them...
-RUN cd ring-daemon &&  ./autogen.sh && CXXFLAGS="-ffunction-sections -fdata-sections -Os" ./configure --without-dbus \
+RUN cd ring-daemon &&  ./autogen.sh && ./configure --without-dbus \
  --enable-static --without-pulse --disable-vdpau --disable-vaapi \
  --disable-videotoolbox --disable-vda --disable-accel --disable-shared \
- --prefix=/opt/ring-kde.AppDir && make -j install && echo bar
+ --prefix=/opt/ring-kde.AppDir && make -j8
 
 # Only add the file after the Daemon is built to speedup image creation
 ADD CMakeLists.txt /bootstrap/CMakeLists.txt
@@ -173,7 +173,7 @@ ADD cmake /bootstrap/cmake
 # Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && CXXFLAGS="" LDFLAGS="" cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
  -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 \
- -DRING_BUILD_DIR=/ring-daemon/src/ -Wno-dev || echo Ignore3
+ -DRING_BUILD_DIR=/ring-daemon/src/ -Dring_BIN=/ring-daemon/src/.libs/libring.a -Wno-dev || echo Ignore2
 
 # Add the appimages
 RUN wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
@@ -191,6 +191,7 @@ RUN sed -i 's/DBusActivatable=true/X-DBusActivatable=true/' -i /opt/ring-kde.App
 ADD AppRun /opt/ring-kde.AppDir/
 
 # FIXME
+RUN mkdir /opt/ring-kde.AppDir/lib/
 RUN cp /lib/libpcre.so.1 /opt/ring-kde.AppDir/lib/
 RUN cp /usr/lib/libasound.so.2 /opt/ring-kde.AppDir/lib/
 
@@ -213,8 +214,6 @@ RUN echo 'Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)' >> /bootstrap/build/newmain
 RUN echo 'Q_IMPORT_PLUGIN(QtGraphicalEffectsPrivatePlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QtQmlModelsPlugin)' >> /bootstrap/build/newmain.cpp
 
-RUN ls /bootstrap/build/
-
 RUN cat /bootstrap/build/ring-kde/ring-kde/src/main.cpp >> /bootstrap/build/newmain.cpp
 RUN cp /bootstrap/build/newmain.cpp /bootstrap/build/ring-kde/ring-kde/src/main.cpp
 RUN cd /bootstrap/build/ring-kde/ring-kde/ && git apply /bootstrap/patches/ring-kde.patch
@@ -235,3 +234,5 @@ CMD cd /bootstrap/build && make -j8 install && find /opt/ring-kde.AppDir/ \
   | grep -v ring-kde | xargs rm -rf &&\
    rm -rf /opt/ring-kde.AppDir/share/locale/ && /appimagetool-x86_64.AppImage\
   /opt/ring-kde.AppDir/ /export/ring-kde.appimage
+
+#CMAKE_AR=/usr/bin/gcc-ar CMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" CMAKE_CXX_ARCHIVE_FINISH=true NM=/usr/bin/gcc-nm AR=/usr/bin/gcc-ar RANLIB=/usr/bin/gcc-ranlib LDFLAGS="-Os -flto=8 -ffunction-sections -fdata-sections -static-libstdc++ -Wl,--export-dynamic" CXXFLAGS="-Os -flto=8 -ffunction-sections -fdata-sections -fvisibility=default -static-libgcc -static-libstdc++ -Wno-error=unused-result -Wno-unused-result" CFLAGS="-Os -flto=8 -Wno-error=unused-result -Wno-unused-result  -ffunction-sections -fdata-sections -Wno-error=unused-result -Wno-unused-result"
