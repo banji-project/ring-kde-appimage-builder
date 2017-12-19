@@ -29,19 +29,20 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 # provides an incomplete list.
 set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} -flto=8\
  /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
- /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lrt\
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lrt\
  -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
 )
 
 set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -flto=8\
  /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
- /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lrt\
+ -Wl,-flto=8,-z,-s,--gc-sections \
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lrt\
  -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
 )
 
 set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} -flto=8\
  /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
- /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lrt\
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lrt\
  -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
 )
 

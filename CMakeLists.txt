@@ -13,11 +13,11 @@ SET(LOCAL_CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 # All static linking elements have to be added "by force" as the package
 # provides an incomplete list.
 set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \
- /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lpthread"
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lpthread"
 )
 
 set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
- /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a -ldl -lpthread"
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lpthread"
 )
 
 # Make sure KF5 subdirectory see each others
@@ -75,7 +75,7 @@ function(fetch_framework name frmname) #opt: EXTRA_LD BRANCH
         if (NOT "${ARGV3}" STREQUAL "")
             set(BRANCH "${ARGV3}")
         else()
-            set(BRANCH v5.38.0)
+            set(BRANCH v5.39.0)
         endif()
 
         execute_process(COMMAND
@@ -169,10 +169,10 @@ fetch_framework(kxmlgui KF5XmlGui)
 #fetch_framework(kinit KF5Init)
 fetch_framework(knotifyconfig KF5NotifyConfig)
 fetch_framework(kdeclarative KF5Declarative "-lGL -lGLU")
-fetch_framework(kirigami KF5Kirigami2 "-lGL -lGLU")
 
 # Style related stuff
-#fetch_framework(qqc2-desktop-style QtQuickControls2DesktopStyle "" "master")
+fetch_framework(kirigami KF5Kirigami2 "-lGL -lGLU")
+fetch_framework(qqc2-desktop-style QtQuickControls2DesktopStyle "" "v5.39.0")
 
 # Now, begin to setup Ring-KDE
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${ring-kde})

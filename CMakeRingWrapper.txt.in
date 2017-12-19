@@ -35,9 +35,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 
 # -Wl,--as-needed
 
-set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -flto=8\
- -Wl,--gc-sections -Wl,--strip-all -Wl,--exclude-libs\
- -Wl,--as-needed\
+set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}\
+ -Wl,--strip-all -Wl,--exclude-libs\
+ -Wl,--as-needed  -Wl,-flto=8,-z,-s,--gc-sections\
 ")
 
 # Force some extra static libs
@@ -48,7 +48,7 @@ set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -flto=8\
 set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \
  /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a \
  /opt/usr/lib/libxcb-static.a \
- /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a \
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a \
   -lGL -lGLU  @EXTRA_LD@"
 )
 
@@ -73,7 +73,7 @@ set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
 
 set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \
  /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a \
- /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre.a \
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a \
  /opt/usr/lib/libxcb-static.a \
  /opt/usr/lib/libQt5XcbQpa.a \
   -lGL -lGLU  @EXTRA_LD@"
@@ -84,12 +84,12 @@ set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \
 set(BUILD_WITH_QTSCRIPT OFF)
 option(BUILD_WITH_QTSCRIPT OFF)
 
-# Fetch ring-kde and ring-lrc
+# Fetch ring-kde and libringqt
 
 
 if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde)
     execute_process(COMMAND
-        git clone https://anongit.kde.org/ring-kde --branch kirigami ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/
+        git clone https://anongit.kde.org/ring-kde --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/
     )
 else()
 #    execute_process(COMMAND
@@ -97,13 +97,13 @@ else()
 #    )
 endif()
 
-if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc)
+if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libringqt)
     execute_process(COMMAND
-         git clone https://github.com/elv13/ring-lrc --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc/
+         git clone https://github.com/elv13/libringqt --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libringqt/
     )
 else()
  #   execute_process(COMMAND
-  #      /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ring-lrc/ && git fetch origin && git reset --hard origin/master"
+  #      /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libringqt/ && git fetch origin && git reset --hard origin/master"
    # )
 endif()
 

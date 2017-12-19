@@ -53,24 +53,24 @@ RUN emerge -e @world || echo 'Failed, but keep going (self host)'
 RUN cat /etc/portage/make.conf
 
 # Download Qt in order to build a minimal library
-RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.8/5.8.0/single/qt-everywhere-opensource-src-5.8.0.tar.gz &&\
- tar -zxvf qt-everywhere-opensource-src-5.8.0.tar.gz
+RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.9/5.9.3/single/qt-everywhere-opensource-src-5.9.3.tar.xz 
+RUN tar -xpvf qt-everywhere-opensource-src-5.9.3.tar.xz
 
 # Qt5 needs the Gl API
 RUN emerge mesa freeglut dev-python/common
 
 # Replace the default performance Qt flags for portability ones
-RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/common/qcc-base.conf
-RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/common/qcc-base.conf
-RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/common/gcc-base.conf
-RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/common/gcc-base.conf
-RUN echo 'QMAKE_CXXFLAGS -=-O3' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O3' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS -=-O2' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O2' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS=-Os' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE=-Os' >> /qt-everywhere-opensource-src-5.8.0/qtbase/mkspecs/linux-g++/qmake.conf
-RUN find /qt-everywhere-opensource-src-5.8.0/ | xargs grep O3 2> /dev/null \
+RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/common/qcc-base.conf
+RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/common/qcc-base.conf
+RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/common/gcc-base.conf
+RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/common/gcc-base.conf
+RUN echo 'QMAKE_CXXFLAGS -=-O3' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O3' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS -=-O2' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O2' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS=-Os' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE=-Os' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
+RUN find /qt-everywhere-opensource-src-5.9.3/ | xargs grep O3 2> /dev/null \
  | grep -v xml | grep -v Binary 2> /dev/null | cut -f1 -d ':' \
  | grep -E '\.(conf|mk|sh|am|in)$' | xargs sed -i 's/O3/Os/'
 
@@ -78,7 +78,7 @@ RUN find /qt-everywhere-opensource-src-5.8.0/ | xargs grep O3 2> /dev/null \
 # possible
 RUN cd qt-e* &&\
   ./configure -v -release -opensource -confirm-license -reduce-exports -ssl \
-   -qt-xcb -feature-accessibility -opengl desktop  -static -nomake examples \
+   -qt-xcb -qt-xkbcommon -feature-accessibility -opengl desktop  -static -nomake examples \
    -nomake tests -skip qtwebengine -skip qtscript -skip qt3d -skip qtandroidextras \
    -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts \
    -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors \
@@ -132,9 +132,12 @@ RUN cd ring-daemon && git checkout c3648232db3bb679be2d967688d311a221c5cf5c
 ADD patches /bootstrap/patches
 
 RUN cd ring-daemon && git apply /bootstrap/patches/ring-daemon.patch
+RUN emerge -C curl
 RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
  CXXFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" CFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
    --enable-opus --enable-zlib --enable-uuid --enable-uuid && make fetch-all -j8
+
+RUN emerge net-misc/curl
 
 RUN emerge yasm
 #RUN CFLAGS="" LDFLAGS="" emerge sys-fs/fuse
@@ -173,7 +176,7 @@ ADD cmake /bootstrap/cmake
 # Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && CXXFLAGS="" LDFLAGS="" cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
  -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 \
- -DRING_BUILD_DIR=/ring-daemon/src/ -Dring_BIN=/ring-daemon/src/.libs/libring.a -Wno-dev || echo Ignore2
+ -DRING_BUILD_DIR=/ring-daemon/src/ -Dring_BIN=/ring-daemon/src/.libs/libring.a -Wno-dev || echo Ignore
 
 # Add the appimages
 RUN wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
