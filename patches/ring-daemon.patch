@@ -1,34 +1,8 @@
-diff --git a/contrib/src/cryptopp/rules.mak b/contrib/src/cryptopp/rules.mak
-index bf2a475b4..ff98cb691 100644
---- a/contrib/src/cryptopp/rules.mak
-+++ b/contrib/src/cryptopp/rules.mak
-@@ -16,7 +16,13 @@ endif
- 
- CRYPTOPP_CMAKECONF := -DBUILD_TESTING=Off \
- 		-DBUILD_SHARED=Off \
--		-DCMAKE_INSTALL_LIBDIR=lib
-+		-DCMAKE_INSTALL_LIBDIR=lib \
-+                -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
-+                -DCMAKE_C_FLAGS="$(CXXFLAGS)" \
-+                -DCMAKE_C_FLAGS_RELEASE="$(CXXFLAGS)" \
-+                -DCMAKE_AR=/usr/bin/gcc-ar \
-+                -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
-+                -DCMAKE_CXX_ARCHIVE_FINISH=true
- 
- $(TARBALLS)/cryptopp-$(CRYPTOPP_VERSION).tar.gz:
- 	$(call download,$(CRYPTOPP_URL))
-@@ -33,5 +39,5 @@ endif
- .cryptopp: cryptopp toolchain.cmake
- 	cd $< && rm GNUmakefile*
- 	cd $< && $(HOSTVARS) $(CMAKE) . $(CRYPTOPP_CMAKECONF)
--	cd $< && $(MAKE) install
-+	cd $< && $(MAKE) install VERBOSE=1
- 	touch $@
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index f7e02798a..b16e13c14 100644
+index b1db5d131..615a231e2 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -121,13 +121,8 @@ FFMPEGCONF += \
+@@ -120,13 +120,8 @@ FFMPEGCONF += \
  	--target-os=linux \
  	--enable-indev=v4l2 \
  	--enable-indev=xcbgrab \
@@ -73,7 +47,7 @@ index 5be14e876..e19ae86fe 100644
 +	cd $< && $(MAKE) install VERBOSE=1
  	touch $@
 diff --git a/contrib/src/msgpack/rules.mak b/contrib/src/msgpack/rules.mak
-index dc34930dc..b1c39483d 100644
+index 2c0479271..be73ee822 100644
 --- a/contrib/src/msgpack/rules.mak
 +++ b/contrib/src/msgpack/rules.mak
 @@ -10,7 +10,15 @@ endif
@@ -93,9 +67,9 @@ index dc34930dc..b1c39483d 100644
  
  $(TARBALLS)/msgpack-c-$(MSGPACK_VERSION).tar.gz:
  	$(call download,$(MSGPACK_URL))
-@@ -25,5 +33,5 @@ msgpack: msgpack-c-$(MSGPACK_VERSION).tar.gz .sum-msgpack
+@@ -23,5 +31,5 @@ msgpack: msgpack-c-$(MSGPACK_VERSION).tar.gz
  
- .msgpack: msgpack toolchain.cmake
+ .msgpack: msgpack toolchain.cmake .sum-msgpack
  	cd $< && $(HOSTVARS) $(CMAKE) . $(MSGPACK_CMAKECONF)
 -	cd $< && $(MAKE) install
 +	cd $< && $(MAKE) install VERBOSE=1

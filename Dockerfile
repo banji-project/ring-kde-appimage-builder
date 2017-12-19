@@ -126,7 +126,7 @@ RUN mkdir /opt/ring-kde.AppDir -p
 RUN git clone https://github.com/savoirfairelinux/ring-daemon --progress --verbose
 
 # A new dependency was introduced on October 2 2017, I don't care about it
-RUN cd ring-daemon && git checkout c3648232db3bb679be2d967688d311a221c5cf5c
+RUN cd ring-daemon
 
 # Add the patch now as the daemon use them
 ADD patches /bootstrap/patches
@@ -146,6 +146,14 @@ RUN emerge yasm
 #ENV LDFLAGS="-flto=8 $LDFLAGS"
 #ENV CFLAGS="-flto=8 $CFLAGS"
 #ENV CXXFLAGS="$CFLAGS"
+
+
+#HACK Fix msgpack until the PR is merged
+RUN cd ring-daemon/contrib/native && make msgpack || echo Ignore2
+RUN sed -i 's/-Werror//' /ring-daemon/contrib/native/msgpack/CMakeLists.txt
+RUN sed -i 's/-Werror//' /ring-daemon/contrib/native/msgpack/CMakeLists.txt
+RUN sed -i 's/-O3/-Os/' /ring-daemon/contrib/native/msgpack/CMakeLists.txt
+RUN sed -i 's/-O3/-Os/' /ring-daemon/contrib/native/msgpack/CMakeLists.txt
 
 # Cross compile hack
 RUN cd ring-daemon/contrib/native && CXXFLAGS="-Wno-error=unused-result -Wno-unused-result -Os -ffunction-sections -fdata-sections " CFLAGS="-Os -Wno-error=unused-result -Wno-unused-result -ffunction-sections -fdata-sections " make -j8 || echo ignore2 #HACK
@@ -177,6 +185,11 @@ ADD cmake /bootstrap/cmake
 RUN cd /bootstrap/build && CXXFLAGS="" LDFLAGS="" cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
  -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 \
  -DRING_BUILD_DIR=/ring-daemon/src/ -Dring_BIN=/ring-daemon/src/.libs/libring.a -Wno-dev || echo Ignore
+
+#HACK patches in the merging pipeline
+RUN rm /bootstrap/build/kirigami/done
+RUN cd /bootstrap/build/kirigami/kirigami; git reset --hard; git remote add elv13 ssh://lepagee@10.10.10.108:/home/lepagee/archive/kirigami
+RUN cd /bootstrap/build/qqc2-desktop-style/qqc2-desktop-style; git remote add elv13 ssh://lepagee@10.10.10.108:/home/lepagee/archive/qqc2-desktop-style
 
 # Add the appimages
 RUN wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"

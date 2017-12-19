@@ -35,7 +35,6 @@ set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} -flto=8\
 
 set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -flto=8\
  /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
- -Wl,-flto=8,-z,-s,--gc-sections \
  /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lrt\
  -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
 )
