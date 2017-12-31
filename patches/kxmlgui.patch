@@ -1,0 +1,175 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4bc74c8..7e0f900 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -36,7 +36,7 @@ add_feature_info(QCH ${BUILD_QCH} "API documentation in QCH format (for e.g. Qt
+ 
+ # Dependencies
+ set(REQUIRED_QT_VERSION 5.7.0)
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Widgets DBus Xml Network PrintSupport)
++find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Widgets DBus Xml Network PrintSupport X11Extras Svg TextToSpeech)
+ 
+ find_package(KF5CoreAddons ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5ItemViews ${KF5_DEP_VERSION} REQUIRED)
+@@ -44,10 +44,15 @@ find_package(KF5Config ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5ConfigWidgets ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5I18n ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5IconThemes ${KF5_DEP_VERSION} REQUIRED)
+-find_package(KF5TextWidgets ${KF5_DEP_VERSION} REQUIRED)
++#find_package(KF5TextWidgets ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5WidgetsAddons ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5WindowSystem ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5GuiAddons ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5Archive ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5Completion ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5Service ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5Attica ${KF5_DEP_VERSION})
++find_package(KF5DBusAddons ${KF5_DEP_VERSION})
+ set_package_properties(KF5Attica PROPERTIES DESCRIPTION "A Qt library that implements the Open Collaboration Services API"
+                        PURPOSE "Support for Get Hot New Stuff in KXMLGUI"
+                        URL "https://projects.kde.org/attica"
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index dc5af5e..72ac2a2 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -1,5 +1,11 @@
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Xml Test)
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
++
++find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Xml)
+ 
+ remove_definitions(-DQT_NO_CAST_FROM_BYTEARRAY)
+ remove_definitions(-DQT_NO_CAST_FROM_ASCII)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 20e1a84..b0c09e0 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -82,15 +82,16 @@ PUBLIC
+     Qt5::Widgets        #QWidget is used everywhere
+     KF5::ConfigCore         #Reading config for ToolbarIcons, Shortcut Schemes...
+     KF5::ConfigWidgets      #KStandardAction, KToggleAction...
++    KF5::ItemViews           #KWidgetItemDelegate in KAboutApplicationPersonListDelegate
++    #KF5::TextWidgets        #KTextEdit in kbugreport
++
+ PRIVATE
+     Qt5::Network        #QNetworkAccessManager in kaboutapplicationpersonmodel_p
+     Qt5::PrintSupport   #QPrinter in kshortcutseditor
+     KF5::CoreAddons     #KAboutData
+     KF5::WidgetsAddons
+-    KF5::ItemViews           #KWidgetItemDelegate in KAboutApplicationPersonListDelegate
+     KF5::I18n                #i18n and i18nc in many places
+     KF5::IconThemes         #KIconLoader and KIconThemes in KToolBar
+-    KF5::TextWidgets        #KTextEdit in kbugreport
+     KF5::WindowSystem       #KKeyServer in kkeysequencewidget
+     ${XMLGUI_EXTRA_LIBS}
+ )
+diff --git a/src/kbugreport.cpp b/src/kbugreport.cpp
+index cdfb4b0..dd22d82 100644
+--- a/src/kbugreport.cpp
++++ b/src/kbugreport.cpp
+@@ -26,6 +26,7 @@
+ #include <QLayout>
+ #include <QRadioButton>
+ #include <QGroupBox>
++#include <QTextEdit>
+ #include <QLocale>
+ #include <QCloseEvent>
+ #include <QLabel>
+@@ -43,7 +44,6 @@
+ #include <kemailsettings.h>
+ #include <klocalizedstring.h>
+ #include <kmessagebox.h>
+-#include <ktextedit.h>
+ #include <ktitlewidget.h>
+ 
+ #include "kdepackages.h"
+@@ -72,7 +72,7 @@ public:
+     QProcess *m_process;
+     KAboutData m_aboutData;
+ 
+-    KTextEdit *m_lineedit;
++    QTextEdit *m_lineedit;
+     QLineEdit *m_subject;
+     QLabel *m_from;
+     QLabel *m_version;
+@@ -277,12 +277,12 @@ KBugReport::KBugReport(const KAboutData &aboutData, QWidget *_parent)
+         lay->addWidget(label);
+ 
+         // The multiline-edit
+-        d->m_lineedit = new KTextEdit(this);
++        d->m_lineedit = new QTextEdit(this);
+         d->m_lineedit->setMinimumHeight(180);   // make it big
+         d->m_lineedit->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+         d->m_lineedit->setLineWrapMode(QTextEdit::WidgetWidth);
+-        d->m_lineedit->setCheckSpellingEnabled(true);
+-        d->m_lineedit->setSpellCheckingLanguage(QStringLiteral("en"));
++//        d->m_lineedit->setCheckSpellingEnabled(true);
++//        d->m_lineedit->setSpellCheckingLanguage(QStringLiteral("en"));
+         lay->addWidget(d->m_lineedit, 10 /*stretch*/);
+ 
+         d->_k_slotSetFrom();
+diff --git a/src/kmainwindow.cpp b/src/kmainwindow.cpp
+index 21b333b..6d9e9b7 100644
+--- a/src/kmainwindow.cpp
++++ b/src/kmainwindow.cpp
+@@ -38,6 +38,7 @@
+ #include <QtCore/QTimer>
+ #include <QCloseEvent>
+ #include <QDesktopWidget>
++#include <QDebug>
+ #include <QDockWidget>
+ #include <QLayout>
+ #include <QMenuBar>
+@@ -309,6 +310,8 @@ void KMainWindowPrivate::polish(KMainWindow *q)
+         startNumberingImmediately = false;
+     }
+ 
++
++//asdsadsa
+     s = objname;
+     if (startNumberingImmediately) {
+         s += QLatin1Char('1');
+@@ -360,7 +363,7 @@ void KMainWindowPrivate::setSettingsDirty(CallCompression callCompression)
+     if (!letDirtySettings) {
+         return;
+     }
+-
++qDebug() << "SDFDSF";
+     settingsDirty = true;
+     if (autoSaveSettings) {
+         if (callCompression == CompressCalls) {
+diff --git a/src/ksendbugmail/smtp.cpp b/src/ksendbugmail/smtp.cpp
+index d26ecf4..aee7693 100644
+--- a/src/ksendbugmail/smtp.cpp
++++ b/src/ksendbugmail/smtp.cpp
+@@ -173,6 +173,7 @@ void SMTP::connectTimerTick(void)
+     sock = nullptr;
+ 
+     // qDebug() << "connecting to " << serverHost << ":" << hostPort << " ..... ";
++
+     sock = new QSslSocket(this);
+     sock->connectToHost(serverHost, hostPort);
+ 
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 3a5a42f..a1e1a26 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -1,7 +1,12 @@
+ 
+ include(ECMMarkAsTest)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ macro(xmlgui_executable_tests)
+   foreach(_testname ${ARGN})

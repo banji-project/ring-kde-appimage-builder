@@ -1,0 +1,36 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4876f9d..bc05844 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -26,7 +26,7 @@ IF(STATIC_LIBRARY)
+ 	set(CMAKE_AUTOMOC ON)
+ 	set(CMAKE_INCLUDE_CURRENT_DIR ON)
+ 	ADD_DEFINITIONS(-DKIRIGAMI_BUILD_TYPE_STATIC)
+-	find_package(Qt5 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Quick Test Gui Svg)
++	find_package(Qt5 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Quick Gui Svg)
+ 	add_subdirectory(src)
+ 
+ ELSE(STATIC_LIBRARY)
+@@ -72,7 +72,7 @@ ecm_setup_version(${KF5_VERSION}
+     PACKAGE_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/KF5Kirigami2ConfigVersion.cmake"
+     SOVERSION 5)
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Quick Test Gui Svg QuickControls2)
++find_package(Qt5 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Quick Gui Svg QuickControls2)
+ 
+ if(BUILD_EXAMPLES AND CMAKE_SYSTEM_NAME STREQUAL "Android")
+ # treat plasma as an optinal dep: full functionality is expected with only Qt
+@@ -98,7 +98,12 @@ endif()
+ 
+ add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
+ 
+-add_subdirectory(autotests)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(Qt5Test_FOUND)
++    add_subdirectory(autotests)
++endif()
++
+ add_subdirectory(src)
+ 
+ if (BUILD_EXAMPLES)

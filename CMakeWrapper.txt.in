@@ -1,0 +1,82 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+
+PROJECT(dummy)
+
+SET(QT_MIN_VERSION  "5.7.0")
+set(CMAKE_BUILD_TYPE RELEASE)
+
+ADD_DEFINITIONS(-DQT_STATIC)
+
+# From: https://trac.webkit.org/changeset/205672/webkit/trunk/Source/cmake/OptionsCommon.cmake
+# Ensure that the default include system directories are added to the list of CMake implicit includes.
+# This workarounds an issue that happens when using GCC 6 and using system includes (-isystem).
+# For more details check: https://bugs.webkit.org/show_bug.cgi?id=161697
+macro(DETERMINE_GCC_SYSTEM_INCLUDE_DIRS _lang _compiler _flags _result)
+    file(WRITE "${CMAKE_BINARY_DIR}/CMakeFiles/dummy" "\n")
+    separate_arguments(_buildFlags UNIX_COMMAND "${_flags}")
+    execute_process(COMMAND ${_compiler} ${_buildFlags} -v -E -x ${_lang} -dD dummy
+                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles OUTPUT_QUIET
+                    ERROR_VARIABLE _gccOutput)
+    file(REMOVE "${CMAKE_BINARY_DIR}/CMakeFiles/dummy")
+    if ("${_gccOutput}" MATCHES "> search starts here[^\n]+\n *(.+) *\n *End of (search) list")
+        set(${_result} ${CMAKE_MATCH_1})
+        string(REPLACE "\n" " " ${_result} "${${_result}}")
+        separate_arguments(${_result})
+    endif ()
+endmacro()
+
+if (CMAKE_COMPILER_IS_GNUCC)
+   DETERMINE_GCC_SYSTEM_INCLUDE_DIRS("c" "${CMAKE_C_COMPILER}" "${CMAKE_C_FLAGS}" SYSTEM_INCLUDE_DIRS)
+   set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES ${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES} ${SYSTEM_INCLUDE_DIRS})
+endif ()
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+   DETERMINE_GCC_SYSTEM_INCLUDE_DIRS("c++" "${CMAKE_CXX_COMPILER}" "${CMAKE_CXX_FLAGS}" SYSTEM_INCLUDE_DIRS)
+   set(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES} ${SYSTEM_INCLUDE_DIRS})
+endif ()
+
+# Necessary for LTO
+set(CMAKE_AR "/usr/bin/gcc-ar")
+set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+set(CMAKE_CXX_ARCHIVE_FINISH true)
+
+# The parent script will add many paths here
+@ALL_KF5_DIR@
+
+SET(CMAKE_CXX_FLAGS "-Os -flto=8 -fPIC -ffunction-sections -fdata-sections")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
+
+#SET(CMAKE_CXX_FLAGS "-Os -flto=8 -ffunction-sections -fdata-sections -fvisibility=hidden\
+# -fvisibility-inlines-hidden -Wl,--gc-sections -Wl,--strip-all
+#")
+#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
+
+
+#QTBUG-38913
+# All static linking elements have to be added "by force" as the package
+# provides an incomplete list.
+set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} -flto=8\
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lrt\
+ -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
+)
+
+set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -flto=8\
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lrt\
+ -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
+)
+
+set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} -flto=8\
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a\
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a -ldl -lrt\
+ -static-libgcc -static-libstdc++ -lpthread @EXTRA_LD@"
+)
+
+# Make sure KF5 subdirectory see each others
+
+set(BUILD_WITH_QTSCRIPT OFF)
+option(BUILD_WITH_QTSCRIPT OFF)
+
+add_subdirectory(@name@)
+

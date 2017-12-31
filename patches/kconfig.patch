@@ -1,0 +1,81 @@
+diff --git a/src/gui/CMakeLists.txt b/src/gui/CMakeLists.txt
+index 08786d3..1f26c40 100644
+--- a/src/gui/CMakeLists.txt
++++ b/src/gui/CMakeLists.txt
+@@ -48,6 +48,7 @@ if (PythonModuleGeneration_FOUND)
+       PyKF5/KConfigCore/KConfigCoremod.sip
+     HEADERS
+       kconfiggui.h
++      kconfiggroupgui.cpp
+       kconfigloader.h
+       kconfigskeleton.h
+       kstandardshortcut.h
+diff --git a/src/gui/kconfiggroupgui.cpp b/src/gui/kconfiggroupgui.cpp
+index c399a65..7217e32 100644
+--- a/src/gui/kconfiggroupgui.cpp
++++ b/src/gui/kconfiggroupgui.cpp
+@@ -17,7 +17,6 @@
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+ */
+-
+ #include <kconfiggroup.h>
+ 
+ #include <QtCore/QMutableStringListIterator>
+@@ -26,6 +25,10 @@
+ #include <QFont>
+ 
+ #include <kconfiggroup_p.h>
++#include <KConfigGui>
++
++#include <kconfiggui_export.h>
++
+ 
+ /**
+  * Try to read a GUI type from config group @p cg at key @p key.
+@@ -190,15 +193,19 @@ static bool writeEntryGui(KConfigGroup *cg, const char *key, const QVariant &pro
+     return false;
+ }
+ 
+-static int initKConfigGroupGui()
++static KCONFIGGUI_EXPORT __attribute__((used)) int initKConfigGroupGui()
+ {
+     _kde_internal_KConfigGroupGui.readEntryGui = readEntryGui;
+     _kde_internal_KConfigGroupGui.writeEntryGui = writeEntryGui;
+     return 42;                  // because 42 is nicer than 1 or 0
+ }
+ 
+-#ifdef Q_CONSTRUCTOR_FUNCTION
++//#ifdef Q_CONSTRUCTOR_FUNCTION
+ Q_CONSTRUCTOR_FUNCTION(initKConfigGroupGui)
+-#else
+-static int dummyKConfigGroupGui = initKConfigGroupGui();
+-#endif
++//#else
++volatile static KCONFIGGUI_EXPORT __attribute__((used))  int dummyKConfigGroupGui = initKConfigGroupGui();
++//#endif
++
++bool KConfigGui::DummyBobClass::bobcatlol = ([]() -> bool {
++return true;
++})();
+diff --git a/src/gui/kconfiggui.h b/src/gui/kconfiggui.h
+index 1264465..e6013dd 100644
+--- a/src/gui/kconfiggui.h
++++ b/src/gui/kconfiggui.h
+@@ -60,6 +60,11 @@ KCONFIGGUI_EXPORT void setSessionConfig(const QString &id, const QString &key);
+  */
+ KCONFIGGUI_EXPORT bool hasSessionConfig();
+ 
++class KCONFIGGUI_EXPORT DummyBobClass {
++public:
++KCONFIGGUI_EXPORT static bool bobcatlol;
++};
++
+ /**
+  * Returns the name of the application session
+  *
+@@ -72,3 +77,4 @@ KCONFIGGUI_DEPRECATED_EXPORT QString sessionConfigName();
+ }
+ 
+ #endif // KCONFIGGUI_H
++

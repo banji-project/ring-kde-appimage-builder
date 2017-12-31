@@ -1,0 +1,383 @@
+commit 429af27204cd0f44ef1bce6ea52e8510e7366930
+Author: Your Name <you@example.com>
+Date:   Mon Dec 25 16:33:14 2017 +0000
+
+    tnp
+
+diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
+index fbe1e581e..b413763b0 100644
+--- a/contrib/src/ffmpeg/rules.mak
++++ b/contrib/src/ffmpeg/rules.mak
+@@ -63,22 +63,23 @@ FFMPEGCONF += \
+ 	--enable-encoder=libspeex \
+ 	--enable-decoder=libspeex \
+ 	--enable-encoder=libopus \
+-	--enable-decoder=libopus
++	--enable-decoder=libopus \
++        --disable-libopenjpeg
+ 
+ #encoders/decoders for images
+ FFMPEGCONF += \
+-	--enable-encoder=gif \
+-	--enable-decoder=gif \
+-	--enable-encoder=jpegls \
+-	--enable-decoder=jpegls \
+-	--enable-encoder=ljpeg \
+-	--enable-decoder=jpeg2000 \
+-	--enable-encoder=png \
+-	--enable-decoder=png \
+-	--enable-encoder=bmp \
+-	--enable-decoder=bmp \
+-	--enable-encoder=tiff \
+-	--enable-decoder=tiff
++	--disable-encoder=gif \
++	--disable-decoder=gif \
++	--disable-encoder=jpegls \
++	--disable-decoder=jpegls \
++	--disable-encoder=ljpeg \
++	--disable-decoder=jpeg2000 \
++	--disable-encoder=png \
++	--disable-decoder=png \
++	--disable-encoder=bmp \
++	--disable-decoder=bmp \
++	--disable-encoder=tiff \
++	--disable-decoder=tiff
+ 
+ #platform specific options
+ 
+@@ -117,13 +118,8 @@ FFMPEGCONF += \
+ 	--target-os=linux \
+ 	--enable-indev=v4l2 \
+ 	--enable-indev=xcbgrab \
+-	--enable-vdpau \
+-	--enable-hwaccel=h264_vdpau \
+-	--enable-hwaccel=mpeg4_vdpau \
+-	--enable-vaapi \
+-	--enable-hwaccel=h264_vaapi \
+-	--enable-hwaccel=mpeg4_vaapi \
+-	--enable-hwaccel=h263_vaapi
++        --disable-vdpau \
++        --disable-vaapi
+ endif
+ endif
+ 
+@@ -165,15 +161,15 @@ FFMPEGCONF += --arch=x86_64
+ endif
+ 
+ # ARM stuff
+-ifeq ($(ARCH),arm)
++#ifeq ($(ARCH),arm)
+ FFMPEGCONF += --arch=arm
+-ifdef HAVE_ARMV7A
++#ifdef HAVE_ARMV7A
+ FFMPEGCONF += --cpu=cortex-a8
+-endif
++#endif
+ ifdef HAVE_ARMV6
+ FFMPEGCONF += --cpu=armv6 --disable-neon
+ endif
+-endif
++#endif
+ 
+ # ARM64 stuff
+ ifeq ($(ARCH),aarch64)
+@@ -213,6 +209,7 @@ endif
+ 	cd $< && $(HOSTVARS) ./configure \
+ 		--extra-cflags="$(CFLAGS)" \
+ 		--extra-ldflags="$(LDFLAGS)" $(FFMPEGCONF) \
+-		--prefix="$(PREFIX)" --enable-static --disable-shared
++		--prefix="$(PREFIX)" --enable-static --disable-shared \
++                --enable-small
+ 	cd $< && $(MAKE) install-libs install-headers
+ 	touch $@
+diff --git a/contrib/src/gmp/rules.mak b/contrib/src/gmp/rules.mak
+index b490db545..70b98a22b 100644
+--- a/contrib/src/gmp/rules.mak
++++ b/contrib/src/gmp/rules.mak
+@@ -27,7 +27,7 @@ ifdef HAVE_MACOSX
+ 	$(RECONF)
+ 	cd $< && $(HOSTVARS) ./configure --without-clock-gettime $(HOSTCONF)
+ else
+-	cd $< && $(HOSTVARS) ./configure $(HOSTCONF)
++	cd $< && $(HOSTVARS) ./configure $(HOSTCONF) --disable-assembly
+ endif
+ endif
+ 	cd $< && $(MAKE) install
+diff --git a/contrib/src/gnutls/rules.mak b/contrib/src/gnutls/rules.mak
+index 4441fcf91..dcc142b4d 100644
+--- a/contrib/src/gnutls/rules.mak
++++ b/contrib/src/gnutls/rules.mak
+@@ -52,9 +52,9 @@ GNUTLS_CONF := \
+ 	--disable-non-suiteb-curves \
+ 	$(HOSTCONF)
+ 
+-ifdef HAVE_ANDROID
++#ifdef HAVE_ANDROID
+ 	GNUTLS_CONF += --disable-hardware-acceleration
+-endif
++#endif
+ 
+ ifdef HAVE_IOS
+ 	GNUTLS_CONF += --disable-hardware-acceleration
+@@ -79,7 +79,7 @@ else
+ ifdef HAVE_MACOSX
+ 	cd $< && $(HOSTVARS) ac_cv_func_clock_gettime=no CFLAGS="$(CFLAGS)" ./configure $(GNUTLS_CONF)
+ else
+-	cd $< && $(HOSTVARS) CFLAGS="$(CFLAGS)" ./configure $(GNUTLS_CONF)
++	cd $< && $(HOSTVARS) CFLAGS="$(CFLAGS)" ./configure $(GNUTLS_CONF) --disable-assembly
+ endif
+ endif
+ endif
+diff --git a/contrib/src/jsoncpp/rules.mak b/contrib/src/jsoncpp/rules.mak
+index 5be14e876..e19ae86fe 100644
+--- a/contrib/src/jsoncpp/rules.mak
++++ b/contrib/src/jsoncpp/rules.mak
+@@ -10,7 +10,15 @@ endif
+ 
+ JSONCPP_CMAKECONF := -DBUILD_STATIC_LIBS:BOOL=ON \
+                      -DBUILD_SHARED_LIBS:BOOL=OFF \
+-                     -DJSONCPP_WITH_TESTS:BOOL=OFF
++                     -DJSONCPP_WITH_TESTS:BOOL=OFF \
++                     -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++                     -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                     -DCMAKE_C_FLAGS="$(CXXFLAGS)" \
++                     -DCMAKE_C_FLAGS_RELEASE="$(CXXFLAGS)" \
++                     -DCMAKE_AR=/usr/bin/gcc-ar \
++                     -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                     -DCMAKE_CXX_ARCHIVE_FINISH=true
++
+ 
+ $(TARBALLS)/jsoncpp-$(JSONCPP_VERSION).tar.gz:
+ 	$(call download,$(JSONCPP_URL))
+@@ -23,5 +31,5 @@ jsoncpp: jsoncpp-$(JSONCPP_VERSION).tar.gz .sum-jsoncpp
+ 
+ .jsoncpp: jsoncpp toolchain.cmake
+ 	cd $< && $(HOSTVARS) $(CMAKE) . ${JSONCPP_CMAKECONF}
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@
+diff --git a/contrib/src/main.mak b/contrib/src/main.mak
+index 2cc639a46..74a539a6a 100644
+--- a/contrib/src/main.mak
++++ b/contrib/src/main.mak
+@@ -136,9 +136,9 @@ EXTRA_COMMON := -isysroot $(MACOSX_SDK) -mmacosx-version-min=$(MIN_OSX_VERSION)
+ EXTRA_CXXFLAGS += -stdlib=libc++
+ EXTRA_LDFLAGS += -Wl,-syslibroot,$(MACOSX_SDK)
+ ifeq ($(ARCH),x86_64)
+-EXTRA_COMMON += -m64
++#EXTRA_COMMON += -m64
+ else
+-EXTRA_COMMON += -m32
++#EXTRA_COMMON += -m32
+ endif
+ 
+ XCODE_FLAGS = -sdk macosx$(OSX_VERSION)
+@@ -187,9 +187,9 @@ endif
+ 
+ ifdef HAVE_SOLARIS
+ ifeq ($(ARCH),x86_64)
+-EXTRA_COMMON += -m64
++#EXTRA_COMMON += -m64
+ else
+-EXTRA_COMMON += -m32
++#EXTRA_COMMON += -m32
+ endif
+ endif
+ 
+diff --git a/contrib/src/msgpack/rules.mak b/contrib/src/msgpack/rules.mak
+index 2c0479271..be73ee822 100644
+--- a/contrib/src/msgpack/rules.mak
++++ b/contrib/src/msgpack/rules.mak
+@@ -10,7 +10,15 @@ endif
+ MSGPACK_CMAKECONF := -DMSGPACK_CXX11=ON \
+ 		-DMSGPACK_BUILD_EXAMPLES=OFF \
+ 		-DMSGPACK_ENABLE_SHARED=OFF \
+-		-DCMAKE_INSTALL_LIBDIR=lib
++		-DCMAKE_INSTALL_LIBDIR=lib \
++                -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++                -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                -DCMAKE_C_FLAGS="$(CXXFLAGS)" \
++                -DCMAKE_C_FLAGS_RELEASE="$(CXXFLAGS)" \
++                -DCMAKE_AR=/usr/bin/gcc-ar \
++                -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                -DCMAKE_CXX_ARCHIVE_FINISH=true
++
+ 
+ $(TARBALLS)/msgpack-c-$(MSGPACK_VERSION).tar.gz:
+ 	$(call download,$(MSGPACK_URL))
+@@ -23,5 +31,5 @@ msgpack: msgpack-c-$(MSGPACK_VERSION).tar.gz
+ 
+ .msgpack: msgpack toolchain.cmake .sum-msgpack
+ 	cd $< && $(HOSTVARS) $(CMAKE) . $(MSGPACK_CMAKECONF)
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@
+diff --git a/contrib/src/nettle/fix_cc_assembly.patch b/contrib/src/nettle/fix_cc_assembly.patch
+new file mode 100644
+index 000000000..a5804c256
+--- /dev/null
++++ b/contrib/src/nettle/fix_cc_assembly.patch
+@@ -0,0 +1,22 @@
++diff --git a/configure.ac b/configure.ac
++index 1d1951b..28d7ef3 100644
++--- a/configure.ac
+++++ b/configure.ac
++@@ -370,7 +370,7 @@ OPT_NETTLE_SOURCES=""
++ # Select assembler code
++ asm_path=
++ if test "x$enable_assembler" = xyes ; then
++-  case "$host_cpu" in
+++  case "$build_cpu" in
++     [i?86* | k[5-8]* | pentium* | athlon])
++       asm_path=x86
++       ;;
++@@ -400,7 +400,7 @@ if test "x$enable_assembler" = xyes ; then
++ 	asm_path="arm/fat $asm_path"
++ 	OPT_NETTLE_SOURCES="fat-arm.c $OPT_NETTLE_SOURCES"
++       else
++-	case "$host_cpu" in
+++	case "$build_cpu" in
++ 	  armv6* | armv7*)
++ 	    NETTLE_CHECK_ARM_NEON
++ 
+diff --git a/contrib/src/nettle/rules.mak b/contrib/src/nettle/rules.mak
+index b924c7f87..9c1dccf0c 100644
+--- a/contrib/src/nettle/rules.mak
++++ b/contrib/src/nettle/rules.mak
+@@ -27,6 +27,8 @@ ifdef HAVE_IOS
+ 	cd $< && autoreconf
+ 	cd $< && $(HOSTVARS) CFLAGS="$(CFLAGS) -O3" ./configure $(HOSTCONF)
+ else
++	$(APPLY) $(SRC)/nettle/fix_cc_assembly.patch
++	cd $< && autoreconf
+ 	cd $< && $(HOSTVARS) ./configure $(HOSTCONF)
+ endif
+ 	cd $< && $(MAKE) install
+diff --git a/contrib/src/opus/rules.mak b/contrib/src/opus/rules.mak
+index 9c475c9fe..0af8bb704 100644
+--- a/contrib/src/opus/rules.mak
++++ b/contrib/src/opus/rules.mak
+@@ -25,6 +25,6 @@ OPUS_CONF += --enable-fixed-point
+ endif
+ 
+ .opus: opus
+-	cd $< && $(HOSTVARS) ./configure $(HOSTCONF) $(OPUS_CONF)
++	cd $< && $(HOSTVARS) ./configure $(HOSTCONF) $(OPUS_CONF) --host=x86_64-pc-linux-gnu --target=armv7a-hardfloat-linux-gnueabi --disable-rtcd
+ 	cd $< && $(MAKE) install
+ 	touch $@
+diff --git a/contrib/src/restbed/rules.mak b/contrib/src/restbed/rules.mak
+index ac48aea3f..30bb33eda 100644
+--- a/contrib/src/restbed/rules.mak
++++ b/contrib/src/restbed/rules.mak
+@@ -38,7 +38,13 @@ RESTBED_CONF = -DBUILD_TESTS=NO \
+ 			-DBUILD_SSL=NO \
+ 			-DBUILD_SHARED=NO \
+ 			-DCMAKE_INSTALL_PREFIX=$(PREFIX) \
+-			-DCMAKE_INSTALL_LIBDIR=lib
++			-DCMAKE_INSTALL_LIBDIR=lib \
++                        -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++                        -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                        -DCMAKE_AR=/usr/bin/gcc-ar \
++                        -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                        -DCMAKE_CXX_ARCHIVE_FINISH=true
++
+ 
+ $(TARBALLS)/kashmir.tar.gz:
+ 	$(call download,https://github.com/Corvusoft/kashmir-dependency/archive/master.tar.gz)
+@@ -54,7 +60,7 @@ restbed: restbed-$(RESTBED_VERSION).tar.gz kashmir.tar.gz .sum-restbed
+ 
+ .restbed: restbed toolchain.cmake
+ 	cd $< && $(HOSTVARS) $(CMAKE) $(RESTBED_CONF) .
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@
+ 
+ .sum-restbed: restbed-$(RESTBED_VERSION).tar.gz
+diff --git a/contrib/src/vpx/rules.mak b/contrib/src/vpx/rules.mak
+index 4f8c29d5c..dcb5130b9 100644
+--- a/contrib/src/vpx/rules.mak
++++ b/contrib/src/vpx/rules.mak
+@@ -82,6 +82,7 @@ VPX_CONF := \
+ 	--as=yasm \
+ 	--disable-docs \
+ 	--disable-examples \
++	--disable-tools \
+ 	--disable-unit-tests \
+ 	--disable-install-bins \
+ 	--disable-install-docs \
+@@ -117,8 +118,8 @@ VPX_CONF += --extra-cflags="-mstackrealign"
+ endif
+ endif
+ .vpx: libvpx
+-	cd $< && CROSS=$(VPX_CROSS) $(LOCAL_HOSTVARS) ./configure --target=$(VPX_TARGET) \
+-		$(VPX_CONF) --prefix=$(PREFIX)
++	cd $< && CROSS=armv7-linux-gcc $(LOCAL_HOSTVARS) ./configure --target=armv7-linux-gcc \
++		$(VPX_CONF) --prefix=$(PREFIX) #--host=armv7a-hardfloat-linux-gnueabi --build=x86_64-linux-gcc
+ 	cd $< && $(MAKE)
+ 	cd $< && ../../../contrib/src/pkg-static.sh vpx.pc
+ 	cd $< && $(MAKE) install
+diff --git a/contrib/src/x264/rules.mak b/contrib/src/x264/rules.mak
+index 8c17a2f52..d66c0e568 100644
+--- a/contrib/src/x264/rules.mak
++++ b/contrib/src/x264/rules.mak
+@@ -32,11 +32,11 @@ endif
+ endif
+ 
+ # android x86_64 has reloc errors related to assembly optimizations
+-ifdef HAVE_ANDROID
++#ifdef HAVE_ANDROID
+ ifeq ($(ARCH),x86_64)
+ X264CONF += --disable-asm
+ endif
+-endif
++#endif
+ 
+ $(TARBALLS)/x264-$(X264_HASH).tar.xz:
+ 	$(call download_git,$(X264_GITURL),master,$(X264_HASH))
+@@ -52,14 +52,17 @@ x264: x264-$(X264_HASH).tar.xz .sum-x264
+ ifdef HAVE_IOS
+ 	$(APPLY) $(SRC)/x264/remove-align.patch
+ endif
+-ifdef HAVE_ANDROID
++#ifdef HAVE_ANDROID
+ ifeq ($(ARCH),arm)
+ 	$(APPLY) $(SRC)/x264/0001-use-internal-log2f.patch
+ endif
+ ifeq ($(ARCH),i386)
+ 	$(APPLY) $(SRC)/x264/0001-use-internal-log2f.patch
+ endif
+-endif
++	# m64 is not available in cross compile mode
++	cd $(UNPACK_DIR) && sed 's/-m64//' -i configure
++	cd $(UNPACK_DIR) && sed 's/-m64//' -i configure
++#endif
+ 	$(UPDATE_AUTOCONFIG)
+ 	$(MOVE)
+ 
+diff --git a/contrib/src/yaml-cpp/rules.mak b/contrib/src/yaml-cpp/rules.mak
+index 8ea84c3e5..8b6775929 100644
+--- a/contrib/src/yaml-cpp/rules.mak
++++ b/contrib/src/yaml-cpp/rules.mak
+@@ -11,7 +11,14 @@ endif
+ YAML_CPP_CMAKECONF := -DBUILD_STATIC:BOOL=ON \
+                       -DBUILD_SHARED:BOOL=OFF \
+                       -DYAML_CPP_BUILD_TOOLS:BOOL=OFF \
+-                      -DBUILD_SHARED_LIBS:BOOL=OFF
++                      -DBUILD_SHARED_LIBS:BOOL=OFF \
++                      -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++                      -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++                      -DCMAKE_C_FLAGS="$(CXXFLAGS)" \
++                      -DCMAKE_C_FLAGS_RELEASE="$(CXXFLAGS)" \
++                      -DCMAKE_AR=/usr/bin/gcc-ar \
++                      -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++                      -DCMAKE_CXX_ARCHIVE_FINISH=true
+ 
+ $(TARBALLS)/yaml-cpp-$(YAML_CPP_VERSION).tar.gz:
+ 	$(call download,$(YAML_CPP_URL))
+@@ -25,5 +32,5 @@ yaml-cpp: yaml-cpp-$(YAML_CPP_VERSION).tar.gz .sum-yaml-cpp
+ 
+ .yaml-cpp: yaml-cpp toolchain.cmake
+ 	cd $< && $(HOSTVARS) $(CMAKE) . $(YAML_CPP_CMAKECONF)
+-	cd $< && $(MAKE) install
++	cd $< && $(MAKE) install VERBOSE=1
+ 	touch $@

@@ -1,0 +1,76 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a33275e..d3ae109 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -34,7 +34,7 @@ ecm_setup_version(PROJECT
+ set(REQUIRED_QT_VERSION 5.7.0)
+ 
+ find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Widgets DBus)
+-find_package(Qt5 ${REQUIRED_QT_VERSION} QUIET OPTIONAL_COMPONENTS TextToSpeech)
++#find_package(Qt5 ${REQUIRED_QT_VERSION} QUIET OPTIONAL_COMPONENTS TextToSpeech)
+ set_package_properties(Qt5TextToSpeech PROPERTIES
+    DESCRIPTION "Qt text to speech module"
+    TYPE OPTIONAL
+@@ -65,10 +65,11 @@ find_package(KF5Config ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5Codecs ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5CoreAddons ${KF5_DEP_VERSION} REQUIRED)
+ 
+-find_package(Phonon4Qt5 4.6.60 REQUIRED NO_MODULE)
++find_package(Phonon4Qt5 4.6.60 NO_MODULE QUIET)
++
+ set_package_properties(Phonon4Qt5 PROPERTIES
+    DESCRIPTION "Qt-based audio library"
+-   TYPE REQUIRED
++   TYPE RECOMMENDED
+    PURPOSE "Required to build audio notification support")
+ if (Phonon4Qt5_FOUND)
+   add_definitions(-DHAVE_PHONON4QT5)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index e6be420..b257bcf 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -68,6 +68,8 @@ target_include_directories(KF5Notifications INTERFACE "$<INSTALL_INTERFACE:${KDE
+ 
+ target_link_libraries(KF5Notifications PUBLIC
+    Qt5::Widgets
++   Qt5::X11Extras
++   ${X11_LIB}
+ )
+ target_link_libraries(KF5Notifications PRIVATE
+    KF5::CoreAddons
+@@ -86,10 +88,6 @@ if (Qt5TextToSpeech_FOUND)
+     target_link_libraries(KF5Notifications PRIVATE Qt5::TextToSpeech)
+ endif()
+ 
+-if(X11_FOUND)
+-   target_link_libraries(KF5Notifications PRIVATE ${X11_X11_LIB} Qt5::X11Extras)
+-endif()
+-
+ if(APPLE)
+   target_link_libraries(KF5Notifications PRIVATE Qt5::MacExtras)
+ endif()
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index eac110a..02b3e4a 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -1,13 +1,18 @@
+ 
+ include(ECMMarkAsTest)
+ 
++find_package(Qt5Test  CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
++
+ find_package(ECM 0.0.9  NO_MODULE)
+ set_package_properties(ECM PROPERTIES TYPE REQUIRED DESCRIPTION "Extra CMake Modules." URL "https://projects.kde.org/projects/kdesupport/extra-cmake-modules")
+ feature_summary(WHAT REQUIRED_PACKAGES_NOT_FOUND FATAL_ON_MISSING_REQUIRED_PACKAGES)
+ 
+ 
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test)
+-
+ macro(knotifications_executable_tests)
+   foreach(_testname ${ARGN})
+     add_executable(${_testname} ${_testname}.cpp)

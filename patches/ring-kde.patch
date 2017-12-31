@@ -1,0 +1,171 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d8d865e5..056cc6ae 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -96,6 +96,8 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
+   PrintSupport
+   QuickControls2
+   Quick
++  Concurrent
++  X11Extras
+ )
+ 
+ #FIND_PACKAGE(Qt5TextToSpeech ${QT_MIN_VERSION} QUIET)
+@@ -121,7 +123,10 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
+   NotifyConfig
+   GlobalAccel
+   Declarative
+-  Kirigami2
++  #Kirigami2
++  ItemViews
++  Archive
++
+ )
+ 
+ FIND_PACKAGE(KF5 "${AKO_DEP_VERSION}" QUIET COMPONENTS
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index d2b9015b..3a0fb909 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -427,7 +427,6 @@ TARGET_LINK_LIBRARIES(ring-kde
+   KF5::NotifyConfig
+   KF5::GlobalAccel
+   KF5::Declarative
+-  KF5::Kirigami2
+ )
+ 
+ IF (Qt5TextToSpeech_FOUND)
+diff --git a/src/desktopview/qml/dockbar.qml b/src/desktopview/qml/dockbar.qml
+index a3e4ddbb..9fe516d4 100644
+--- a/src/desktopview/qml/dockbar.qml
++++ b/src/desktopview/qml/dockbar.qml
+@@ -61,6 +61,7 @@ Image {
+                 MouseArea {
+                     anchors.fill: parent
+                     onClicked: {
++                        console.log("click", identifier)
+                         dockBar.selectedItem = identifier
+                     }
+                 }
+diff --git a/src/main.cpp b/src/main.cpp
+index 98a023ea..cbcefa4b 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -1,3 +1,20 @@
++#include <QtPlugin>
++Q_IMPORT_PLUGIN(QWaylandIntegrationPlugin)
++Q_IMPORT_PLUGIN(QtQuick2Plugin)
++Q_IMPORT_PLUGIN(QtQuickControls2Plugin)
++Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
++Q_IMPORT_PLUGIN(QLibInputPlugin)
++Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)
++Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)
++Q_IMPORT_PLUGIN(QJpegPlugin)
++Q_IMPORT_PLUGIN(QSvgPlugin)
++Q_IMPORT_PLUGIN(QWaylandEglClientBufferPlugin)
++Q_IMPORT_PLUGIN(QSvgIconPlugin)
++Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)
++Q_IMPORT_PLUGIN(QtGraphicalEffectsPrivatePlugin)
++Q_IMPORT_PLUGIN(QtQmlModelsPlugin)
++Q_IMPORT_PLUGIN(KirigamiPlugin)
++Q_IMPORT_PLUGIN(QQc2DesktopStylePlugin)
+ /***************************************************************************
+  *   Copyright (C) 2009-2015 by Savoir-Faire Linux                         *
+  *   Author : Jérémy Quentin <jeremy.quentin@savoirfairelinux.com>         *
+@@ -25,6 +42,11 @@
+ #include <KDBusService>
+ #include <KAboutData>
+ #include <KLocalizedString>
++#include <KColorScheme>
++#include <kconfigskeleton.h>
++
++#include<KConfigGui>
++#include<KConfigLoader>
+ 
+ //Ring
+ #include "ringapplication.h"
+@@ -32,6 +54,9 @@
+ #include "cmd.h"
+ #include <QQmlDebuggingEnabler>
+ 
++#include <QQmlExtensionPlugin>
++#include <QQuickStyle>
++#include <QScreen>
+ constexpr static const char version[] = "3.0.0-alpha1";
+ 
+ int main(int argc, char **argv)
+@@ -41,11 +66,24 @@ int main(int argc, char **argv)
+       //QQmlDebuggingEnabler enabler;
+ 
+       QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+-
+       RingApplication app( argc, argv );
+-
++QFont font = app.font();
++font.setPixelSize(12);
++//font.setPointSize(9);
++app.setFont(font);
++
++qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_KirigamiPlugin().instance())->registerTypes("org.kde.kirigami");
++qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QQc2DesktopStylePlugin().instance())->registerTypes("org.kde.desktop.private");
++QQuickStyle::setStyle(":/org.kde.desktop");
+       KLocalizedString::setApplicationDomain("ring-kde");
+ 
++QColor col;
++qDebug() << "DPI" << QGuiApplication::primaryScreen()->physicalDotsPerInch();
++
++app.setFont(font);
++
++      app.setPalette(KColorScheme::createApplicationPalette(KSharedConfig::openConfig("Breeze Dark")));
++
+       KAboutData about(QStringLiteral("ring-kde"),
+          i18n("ring-kde"),
+          /*QStringLiteral(*/version/*)*/,
+@@ -83,7 +121,8 @@ int main(int argc, char **argv)
+ 
+       //The app will have quitted by now if an instance already exist
+       app.newInstance();
+-
++app.setFont(font);
++	
+       const int retVal = app.exec();
+ 
+       ConfigurationSkeleton::self()->save();
+diff --git a/src/ringapplication.cpp b/src/ringapplication.cpp
+index b6806ef8..c02b13da 100644
+--- a/src/ringapplication.cpp
++++ b/src/ringapplication.cpp
+@@ -552,6 +552,8 @@ QQuickWindow* RingApplication::desktopWindow() const
+ 
+          auto obj2 = component.create();
+ 
++qDebug() << "New error" << component.errorString() << obj2;
++
+          // I have *no* clue why this is needed... A race somewhere
+          while (component.errorString().isEmpty() && !obj2)
+             obj2 = component.create();
+diff --git a/src/timeline/CMakeLists.txt b/src/timeline/CMakeLists.txt
+index 70d8cd95..a89bf7d6 100644
+--- a/src/timeline/CMakeLists.txt
++++ b/src/timeline/CMakeLists.txt
+@@ -78,7 +78,7 @@ target_link_libraries( libtimeline
+    KF5::WidgetsAddons
+    KF5::ConfigCore
+    KF5::ConfigGui
+-   KF5::Kirigami2
++   #KF5::Kirigami2
+ )
+ 
+ SET( libtimeline_LIB_HDRS
+diff --git a/src/wizard/qml/StartingPage.qml b/src/wizard/qml/StartingPage.qml
+index 67924c28..c3799a24 100644
+--- a/src/wizard/qml/StartingPage.qml
++++ b/src/wizard/qml/StartingPage.qml
+@@ -37,6 +37,7 @@ StartingPageForm {
+     MouseArea {
+         anchors.fill: parent
+         onClicked: {
++
+             if (wizardWelcomeOnly == true) {
+                 quit()
+                 return
