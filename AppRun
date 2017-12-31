@@ -6,5 +6,6 @@ export PYTHONPATH="${HERE}"/usr/share/pyshared/:"${PYTHONPATH}"
 export XDG_DATA_DIRS="${HERE}"/usr/share/:"${XDG_DATA_DIRS}"
 export PERLLIB="${HERE}"/usr/share/perl5/:"${HERE}"/usr/lib/perl5/:"${PERLLIB}"
 export QT_QPA_FONTDIR=${HERE}/fonts
+export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 EXEC=${HERE}/bin/ring-kde
 exec "${EXEC}"

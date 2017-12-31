@@ -1,8 +1,45 @@
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index b1db5d131..615a231e2 100644
+index b1db5d131..affd4e612 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -120,13 +120,8 @@ FFMPEGCONF += \
+@@ -66,22 +66,23 @@ FFMPEGCONF += \
+ 	--enable-encoder=libspeex \
+ 	--enable-decoder=libspeex \
+ 	--enable-encoder=libopus \
+-	--enable-decoder=libopus
++	--enable-decoder=libopus \
++        --disable-libopenjpeg
+ 
+ #encoders/decoders for images
+ FFMPEGCONF += \
+-	--enable-encoder=gif \
+-	--enable-decoder=gif \
+-	--enable-encoder=jpegls \
+-	--enable-decoder=jpegls \
+-	--enable-encoder=ljpeg \
+-	--enable-decoder=jpeg2000 \
+-	--enable-encoder=png \
+-	--enable-decoder=png \
+-	--enable-encoder=bmp \
+-	--enable-decoder=bmp \
+-	--enable-encoder=tiff \
+-	--enable-decoder=tiff
++	--disable-encoder=gif \
++	--disable-decoder=gif \
++	--disable-encoder=jpegls \
++	--disable-decoder=jpegls \
++	--disable-encoder=ljpeg \
++	--disable-decoder=jpeg2000 \
++	--disable-encoder=png \
++	--disable-decoder=png \
++	--disable-encoder=bmp \
++	--disable-decoder=bmp \
++	--disable-encoder=tiff \
++	--disable-decoder=tiff
+ 
+ #platform specific options
+ 
+@@ -120,13 +121,8 @@ FFMPEGCONF += \
  	--target-os=linux \
  	--enable-indev=v4l2 \
  	--enable-indev=xcbgrab \
@@ -18,6 +55,15 @@ index b1db5d131..615a231e2 100644
  endif
  endif
  
+@@ -216,6 +212,7 @@ endif
+ 	cd $< && $(HOSTVARS) ./configure \
+ 		--extra-cflags="$(CFLAGS)" \
+ 		--extra-ldflags="$(LDFLAGS)" $(FFMPEGCONF) \
+-		--prefix="$(PREFIX)" --enable-static --disable-shared
++		--prefix="$(PREFIX)" --enable-static --disable-shared \
++                --enable-small
+ 	cd $< && $(MAKE) install-libs install-headers
+ 	touch $@
 diff --git a/contrib/src/jsoncpp/rules.mak b/contrib/src/jsoncpp/rules.mak
 index 5be14e876..e19ae86fe 100644
 --- a/contrib/src/jsoncpp/rules.mak

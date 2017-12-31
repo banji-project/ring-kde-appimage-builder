@@ -83,7 +83,7 @@ RUN cd qt-e* &&\
    -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts \
    -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors \
    -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwayland \
-   -prefix /opt/usr -no-glib -qt-zlib -qt-freetype -ltcg
+   -prefix /opt/usr -no-glib -qt-zlib -qt-freetype -ltcg -optimize-size
 
 # Build Qt, this is long
 RUN cd qt-e* && make -j8
@@ -134,8 +134,9 @@ ADD patches /bootstrap/patches
 RUN cd ring-daemon && git apply /bootstrap/patches/ring-daemon.patch
 RUN emerge -C curl
 RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
- CXXFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" CFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
-   --enable-opus --enable-zlib --enable-uuid --enable-uuid && make fetch-all -j8
+ CXXFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" \
+ CFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
+   --enable-opus --enable-zlib --enable-uuid --enable-uuid --enable-pcre && make fetch-all -j8
 
 RUN emerge net-misc/curl
 
@@ -147,6 +148,9 @@ RUN emerge yasm
 #ENV CFLAGS="-flto=8 $CFLAGS"
 #ENV CXXFLAGS="$CFLAGS"
 
+ENV AR="/usr/bin/gcc-ar"
+ENV NM="/usr/bin/gcc-nm"
+ENV RANLIB="/usr/bin/gcc-ranlib"
 
 #HACK Fix msgpack until the PR is merged
 RUN cd ring-daemon/contrib/native && make msgpack || echo Ignore2
@@ -156,7 +160,10 @@ RUN sed -i 's/-O3/-Os/' /ring-daemon/contrib/native/msgpack/CMakeLists.txt
 RUN sed -i 's/-O3/-Os/' /ring-daemon/contrib/native/msgpack/CMakeLists.txt
 
 # Cross compile hack
-RUN cd ring-daemon/contrib/native && CXXFLAGS="-Wno-error=unused-result -Wno-unused-result -Os -ffunction-sections -fdata-sections " CFLAGS="-Os -Wno-error=unused-result -Wno-unused-result -ffunction-sections -fdata-sections " make -j8 || echo ignore2 #HACK
+RUN cd ring-daemon/contrib/native && CXXFLAGS="-Wno-error=unused-result \
+ -Wno-unused-result -Os -ffunction-sections -fdata-sections " \
+  CFLAGS="-Os -Wno-error=unused-result -Wno-unused-result -ffunction-sections\
+  -fdata-sections " make -j8 || echo ignore2 #HACK
 RUN cp /usr/share/libtool/build-aux/config.guess /ring-daemon/contrib/native/uuid/
 RUN cp /usr/share/libtool/build-aux/config.sub /ring-daemon/contrib/native/uuid/
 
@@ -207,9 +214,9 @@ RUN sed -i 's/DBusActivatable=true/X-DBusActivatable=true/' -i /opt/ring-kde.App
 ADD AppRun /opt/ring-kde.AppDir/
 
 # FIXME
-RUN mkdir /opt/ring-kde.AppDir/lib/
-RUN cp /lib/libpcre.so.1 /opt/ring-kde.AppDir/lib/
-RUN cp /usr/lib/libasound.so.2 /opt/ring-kde.AppDir/lib/
+#RUN mkdir /opt/ring-kde.AppDir/lib/
+#RUN cp /lib/libpcre.so.1 /opt/ring-kde.AppDir/lib/
+#RUN cp /usr/lib/libasound.so.2 /opt/ring-kde.AppDir/lib/
 
 # TODO: Fix this too
 RUN echo '#include <QtPlugin>' > /bootstrap/build/newmain.cpp
@@ -221,7 +228,6 @@ RUN echo 'Q_IMPORT_PLUGIN(QEvdevKeyboardPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QEvdevMousePlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtQuickControls1Plugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QJpegPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QSvgPlugin)' >> /bootstrap/build/newmain.cpp
 RUN echo 'Q_IMPORT_PLUGIN(QSvgIconPlugin)' >> /bootstrap/build/newmain.cpp
@@ -234,6 +240,14 @@ RUN cat /bootstrap/build/ring-kde/ring-kde/src/main.cpp >> /bootstrap/build/newm
 RUN cp /bootstrap/build/newmain.cpp /bootstrap/build/ring-kde/ring-kde/src/main.cpp
 RUN cd /bootstrap/build/ring-kde/ring-kde/ && git apply /bootstrap/patches/ring-kde.patch
 
+# Enable LTO for some ring dependencies
+ENV LDFLAGS="-static-libstdc++ -fuse-linker-plugin -Wl,--gc-sections -Wl,--strip-all -Wl,--as-needed -Wl,-flto=8"
+ENV CFLAGS="-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--strip-all -flto=8 -Wl,-flto=8"
+ENV CXXFLAGS="-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--strip-all -flto=8 -Wl,-flto=8"
+RUN /ring-daemon/contrib/native/samplerate/ /ring-daemon/contrib/native/.samplerate \
+  /ring-daemon/contrib/native/nettle/ /ring-daemon/contrib/native/.nettle \
+  /ring-daemon/contrib/native/pjpr* /ring-daemon/contrib/native/.pjp*
+RUN cd /ring-daemon/contrib/native/ && make -j8
 
 # Make sure there is fallback fonts and color Emojis
 ADD fonts /fonts
