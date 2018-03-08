@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1aeb24a..58c897c 100644
+index f34e47e..8f7a721 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,7 +1,7 @@
@@ -12,7 +12,7 @@ index 1aeb24a..58c897c 100644
  
  project(qqc2-desktop-style VERSION ${KF5_VERSION})
  
-@@ -25,7 +25,7 @@ include(FeatureSummary)
+@@ -30,7 +30,7 @@ include(FeatureSummary)
  
  ################# set KDE specific information #################
  
@@ -21,7 +21,7 @@ index 1aeb24a..58c897c 100644
  
  # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
-@@ -36,13 +36,16 @@ include(KDEInstallDirs)
+@@ -41,13 +41,15 @@ include(KDEInstallDirs)
  include(KDECMakeSettings)
  include(KDECompilerSettings NO_POLICY_SCOPE)
  
@@ -33,9 +33,8 @@ index 1aeb24a..58c897c 100644
  find_package(KF5 ${KF5_DEP_VERSION} COMPONENTS
                  IconThemes #KIconLoader
                  ConfigWidgets #KColorScheme
-+ Archive I18n
-+ ItemViews GuiAddons
-+
++Archive I18n
++ItemViews GuiAddons
              )
  
  if (NOT APPLE AND NOT WIN32)

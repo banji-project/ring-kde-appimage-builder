@@ -171,8 +171,8 @@ fetch_framework(knotifyconfig KF5NotifyConfig)
 fetch_framework(kdeclarative KF5Declarative "-lGL -lGLU")
 
 # Style related stuff
-fetch_framework(kirigami KF5Kirigami2 "-lGL -lGLU")
-fetch_framework(qqc2-desktop-style QtQuickControls2DesktopStyle "" "master")
+fetch_framework(kirigami KF5Kirigami2 "-lGL -lGLU" "master")
+fetch_framework(qqc2-desktop-style QtQuickControls2DesktopStyle "" "elv13/fix_static")
 
 # Now, begin to setup Ring-KDE
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${ring-kde})

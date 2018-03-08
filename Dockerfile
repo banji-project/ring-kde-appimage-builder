@@ -76,7 +76,7 @@ RUN find /qt-everywhere-opensource-src-5.9.3/ | xargs grep O3 2> /dev/null \
 
 # Build a static Qt package with as little system dependencies as
 # possible
-RUN cd qt-e* &&\
+RUN cd qt-everywhere-opensource-src-5.9.3 &&\
   ./configure -v -release -opensource -confirm-license -reduce-exports -ssl \
    -qt-xcb -qt-xkbcommon -feature-accessibility -opengl desktop  -static -nomake examples \
    -nomake tests -skip qtwebengine -skip qtscript -skip qt3d -skip qtandroidextras \
@@ -86,8 +86,8 @@ RUN cd qt-e* &&\
    -prefix /opt/usr -no-glib -qt-zlib -qt-freetype -ltcg -optimize-size
 
 # Build Qt, this is long
-RUN cd qt-e* && make -j8
-RUN cd qt-e* && make install
+RUN cd qt-everywhere-opensource-src-5.9.3 && make -j8
+RUN cd qt-everywhere-opensource-src-5.9.3 && make install
 RUN rm -rf qt-e # Keep the docker image smaller
 
 # Not very clean, but running tests in this environment hits a lot of
@@ -102,7 +102,7 @@ RUN QT_INSTALL_PREFIX=/opt/usr/
 # Begin building KF5
 #RUN apt install gperf gettext libxcb-keysyms1-dev libxrender-dev \
 # libxcb-image0-dev libxcb-xinerama0-dev flex bison -y
-RUN USE="-gpg -pcre -perl -python -threads -webdav" emerge gperf gettext \
+RUN USE="-gpg -pcre -perl -python -threads -webdav -pcre-jit" emerge gperf gettext \
  flex bison x11-libs/xcb-util-keysyms dev-vcs/git yasm \
  media-libs/alsa-lib
 
@@ -132,13 +132,18 @@ RUN cd ring-daemon
 ADD patches /bootstrap/patches
 
 RUN cd ring-daemon && git apply /bootstrap/patches/ring-daemon.patch
-RUN emerge -C curl
+
 RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
  CXXFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" \
- CFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
-   --enable-opus --enable-zlib --enable-uuid --enable-uuid --enable-pcre && make fetch-all -j8
+ CFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" ../bootstrap \
+   --disable-dbus-cpp --enable-vorbis --enable-ogg --enable-opus --enable-zlib\
+   --enable-uuid --enable-uuid --enable-pcre
 
-RUN emerge net-misc/curl
+# Try to force it to retry again and again until it works
+RUN cd ring-daemon/contrib/native && \
+   while [ true ]; do \
+       make fetch-all -j8 && break || sleep 1800; \
+   done
 
 RUN emerge yasm
 #RUN CFLAGS="" LDFLAGS="" emerge sys-fs/fuse
@@ -193,58 +198,30 @@ RUN cd /bootstrap/build && CXXFLAGS="" LDFLAGS="" cmake .. -DCMAKE_INSTALL_PREFI
  -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 \
  -DRING_BUILD_DIR=/ring-daemon/src/ -Dring_BIN=/ring-daemon/src/.libs/libring.a -Wno-dev || echo Ignore
 
-#HACK patches in the merging pipeline
-RUN rm /bootstrap/build/kirigami/done
-RUN cd /bootstrap/build/kirigami/kirigami; git reset --hard; git remote add elv13 ssh://lepagee@10.10.10.108:/home/lepagee/archive/kirigami
-RUN cd /bootstrap/build/qqc2-desktop-style/qqc2-desktop-style; git remote add elv13 ssh://lepagee@10.10.10.108:/home/lepagee/archive/qqc2-desktop-style
+
+RUN sed -i 's/5\.[0-9][0-9]/5\.39/' /bootstrap/build/kirigami/kirigami/CMakeLists.txt
+RUN sed -i 's/5\.[0-9][0-9]/5\.39/' /bootstrap/build/qqc2-desktop-style/qqc2-desktop-style/CMakeLists.txt
+RUN cd /bootstrap/build && CXXFLAGS="" LDFLAGS="" cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
+ -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 \
+ -DRING_BUILD_DIR=/ring-daemon/src/ -Dring_BIN=/ring-daemon/src/.libs/libring.a -Wno-dev || echo Ignore
+
 
 # Add the appimages
 RUN wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
 RUN chmod a+x appimagetool-x86_64.AppImage
-
-# Add the icons and desktop
-RUN cp /bootstrap/build/ring-kde/ring-kde/data/*.desktop /opt/ring*/
-RUN cp /bootstrap/build/ring-kde/ring-kde/data/icons/sc-apps-ring-kde.svgz \
-  /opt/ring-kde.AppDir/ring-kde.svgz
-
-ADD AppRun /opt/ring-kde.AppDir/
-
-RUN sed -i 's/DBusActivatable=true/X-DBusActivatable=true/' -i /opt/ring-kde.AppDir/*.desktop
-
-ADD AppRun /opt/ring-kde.AppDir/
 
 # FIXME
 #RUN mkdir /opt/ring-kde.AppDir/lib/
 #RUN cp /lib/libpcre.so.1 /opt/ring-kde.AppDir/lib/
 #RUN cp /usr/lib/libasound.so.2 /opt/ring-kde.AppDir/lib/
 
-# TODO: Fix this too
-RUN echo '#include <QtPlugin>' > /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtQuick2Plugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtQuickControls2Plugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QEvdevKeyboardPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QEvdevMousePlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QJpegPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QSvgPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QSvgIconPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QXcbGlxIntegrationPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtGraphicalEffectsPrivatePlugin)' >> /bootstrap/build/newmain.cpp
-RUN echo 'Q_IMPORT_PLUGIN(QtQmlModelsPlugin)' >> /bootstrap/build/newmain.cpp
-
-RUN cat /bootstrap/build/ring-kde/ring-kde/src/main.cpp >> /bootstrap/build/newmain.cpp
-RUN cp /bootstrap/build/newmain.cpp /bootstrap/build/ring-kde/ring-kde/src/main.cpp
 RUN cd /bootstrap/build/ring-kde/ring-kde/ && git apply /bootstrap/patches/ring-kde.patch
 
 # Enable LTO for some ring dependencies
 ENV LDFLAGS="-static-libstdc++ -fuse-linker-plugin -Wl,--gc-sections -Wl,--strip-all -Wl,--as-needed -Wl,-flto=8"
 ENV CFLAGS="-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--strip-all -flto=8 -Wl,-flto=8"
 ENV CXXFLAGS="-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--strip-all -flto=8 -Wl,-flto=8"
-RUN /ring-daemon/contrib/native/samplerate/ /ring-daemon/contrib/native/.samplerate \
+RUN rm -rf /ring-daemon/contrib/native/samplerate/ /ring-daemon/contrib/native/.samplerate \
   /ring-daemon/contrib/native/nettle/ /ring-daemon/contrib/native/.nettle \
   /ring-daemon/contrib/native/pjpr* /ring-daemon/contrib/native/.pjp*
 RUN cd /ring-daemon/contrib/native/ && make -j8
@@ -259,6 +236,17 @@ ADD fonts/* /opt/ring-kde.AppDir/fonts/
 
 # Fuse doesn't link with gold
 RUN LDFLAGS="$LDFLAGS -Wl,-fuse-ld=bfd" emerge sys-fs/fuse
+
+# Add the icons and desktop
+RUN cp /bootstrap/build/ring-kde/ring-kde/data/*.desktop /opt/ring*/
+RUN cp /bootstrap/build/ring-kde/ring-kde/data/icons/sc-apps-ring-kde.svgz \
+  /opt/ring-kde.AppDir/ring-kde.svgz
+
+ADD AppRun /opt/ring-kde.AppDir/
+
+RUN sed -i 's/DBusActivatable=true/X-DBusActivatable=true/' -i /opt/ring-kde.AppDir/*.desktop
+
+ADD AppRun /opt/ring-kde.AppDir/
 
 CMD cd /bootstrap/build && make -j8 install && find /opt/ring-kde.AppDir/ \
   | grep -v ring-kde | xargs rm -rf &&\

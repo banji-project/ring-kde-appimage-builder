@@ -1,11 +1,5 @@
-commit 39bd547c45248c1b68f78d24d77f3f3f103592bc
-Author: Your Name <you@example.com>
-Date:   Tue Dec 19 06:17:37 2017 +0000
-
-    TMP
-
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 65bcf9ff..fc44780f 100644
+index d8d865e5..056cc6ae 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -96,6 +96,8 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
@@ -30,10 +24,10 @@ index 65bcf9ff..fc44780f 100644
  
  FIND_PACKAGE(KF5 "${AKO_DEP_VERSION}" QUIET COMPONENTS
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index d2b9015b..3a0fb909 100644
+index 52d17610..dbece063 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -427,7 +427,6 @@ TARGET_LINK_LIBRARIES(ring-kde
+@@ -431,7 +431,6 @@ TARGET_LINK_LIBRARIES(ring-kde
    KF5::NotifyConfig
    KF5::GlobalAccel
    KF5::Declarative
@@ -42,21 +36,22 @@ index d2b9015b..3a0fb909 100644
  
  IF (Qt5TextToSpeech_FOUND)
 diff --git a/src/main.cpp b/src/main.cpp
-index 98a023ea..0c68813e 100644
+index 98a023ea..4577502c 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -1,3 +1,22 @@
+@@ -1,3 +1,23 @@
 +#include <QtPlugin>
 +Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
 +Q_IMPORT_PLUGIN(QtQuick2Plugin)
++Q_IMPORT_PLUGIN(QtQuickControls1Plugin)
 +Q_IMPORT_PLUGIN(QtQuickControls2Plugin)
 +Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
 +Q_IMPORT_PLUGIN(QEvdevKeyboardPlugin)
 +Q_IMPORT_PLUGIN(QEvdevMousePlugin)
 +Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)
 +Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)
-+Q_IMPORT_PLUGIN(QtQuickControls1Plugin)
 +Q_IMPORT_PLUGIN(QJpegPlugin)
++//Q_IMPORT_PLUGIN(QJpegPlugin)
 +Q_IMPORT_PLUGIN(QSvgPlugin)
 +Q_IMPORT_PLUGIN(QSvgIconPlugin)
 +Q_IMPORT_PLUGIN(QXcbGlxIntegrationPlugin)
@@ -68,7 +63,7 @@ index 98a023ea..0c68813e 100644
  /***************************************************************************
   *   Copyright (C) 2009-2015 by Savoir-Faire Linux                         *
   *   Author : Jérémy Quentin <jeremy.quentin@savoirfairelinux.com>         *
-@@ -25,6 +44,11 @@
+@@ -25,6 +45,11 @@
  #include <KDBusService>
  #include <KAboutData>
  #include <KLocalizedString>
@@ -80,7 +75,7 @@ index 98a023ea..0c68813e 100644
  
  //Ring
  #include "ringapplication.h"
-@@ -32,6 +56,9 @@
+@@ -32,6 +57,9 @@
  #include "cmd.h"
  #include <QQmlDebuggingEnabler>
  
@@ -90,7 +85,7 @@ index 98a023ea..0c68813e 100644
  constexpr static const char version[] = "3.0.0-alpha1";
  
  int main(int argc, char **argv)
-@@ -41,11 +68,18 @@ int main(int argc, char **argv)
+@@ -41,11 +69,18 @@ int main(int argc, char **argv)
        //QQmlDebuggingEnabler enabler;
  
        QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -111,7 +106,7 @@ index 98a023ea..0c68813e 100644
        KAboutData about(QStringLiteral("ring-kde"),
           i18n("ring-kde"),
           /*QStringLiteral(*/version/*)*/,
-@@ -82,6 +116,7 @@ int main(int argc, char **argv)
+@@ -82,6 +117,7 @@ int main(int argc, char **argv)
  #endif
  
        //The app will have quitted by now if an instance already exist
@@ -120,10 +115,10 @@ index 98a023ea..0c68813e 100644
  
        const int retVal = app.exec();
 diff --git a/src/ringapplication.cpp b/src/ringapplication.cpp
-index c2d427fa..bef07949 100644
+index 8e0bc291..37954a41 100644
 --- a/src/ringapplication.cpp
 +++ b/src/ringapplication.cpp
-@@ -552,6 +552,8 @@ QQuickWindow* RingApplication::desktopWindow() const
+@@ -570,6 +570,8 @@ QQuickWindow* RingApplication::desktopWindow() const
  
           auto obj2 = component.create();
  

@@ -1,8 +1,168 @@
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index b1db5d131..affd4e612 100644
+index fbe1e581e..0c69c98f1 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -66,22 +66,23 @@ FFMPEGCONF += \
+@@ -19,14 +19,156 @@ FFMPEGCONF += \
+ 	--enable-zlib \
+ 	--enable-gpl \
+ 	--enable-swscale \
+-	--enable-protocols \
++	--disable-protocols \
+ 	--enable-bsfs \
+ 	--disable-programs
+ 
+ #enable muxers/demuxers
+ FFMPEGCONF += \
+-	--enable-demuxers \
+-	--enable-muxers
++	--disable-demuxers \
++	--disable-muxers
++
++FFMPEGCONF += \
++	--enable-muxer=ac3 \
++	--enable-muxer=avi \
++	--enable-muxer=avm2 \
++	--enable-muxer=bit \
++	--enable-muxer=crc \
++	--enable-muxer=dv \
++	--enable-muxer=fifo \
++	--enable-muxer=g722 \
++	--enable-muxer=g723_1 \
++	--enable-muxer=g726 \
++	--enable-muxer=g726le \
++	--enable-muxer=gsm \
++	--enable-muxer=h263 \
++	--enable-muxer=h264 \
++	--enable-muxer=hash \
++	--enable-muxer=hevc \
++	--enable-muxer=m4v \
++	--enable-muxer=matroska \
++	--enable-muxer=matroska_audio \
++	--enable-muxer=md5 \
++	--enable-muxer=mjpeg \
++	--enable-muxer=mp2 \
++	--enable-muxer=mp3 \
++	--enable-muxer=mp4 \
++	--enable-muxer=mpeg2dvd \
++	--enable-muxer=mpeg2svcd \
++	--enable-muxer=mpeg2video \
++	--enable-muxer=mpeg2vob \
++	--enable-muxer=mpegts \
++	--enable-muxer=mpjpeg \
++	--enable-muxer=oga \
++	--enable-muxer=ogg \
++	--enable-muxer=ogv \
++	--enable-muxer=opus \
++	--enable-muxer=pcm_alaw \
++	--enable-muxer=pcm_f32be \
++	--enable-muxer=pcm_f32le \
++	--enable-muxer=pcm_f64be \
++	--enable-muxer=pcm_f64le \
++	--enable-muxer=pcm_mulaw \
++	--enable-muxer=pcm_s16be \
++	--enable-muxer=pcm_s16le \
++	--enable-muxer=pcm_s24be \
++	--enable-muxer=pcm_s24le \
++	--enable-muxer=pcm_s32be \
++	--enable-muxer=pcm_s32le \
++	--enable-muxer=pcm_s8 \
++	--enable-muxer=pcm_u16be \
++	--enable-muxer=pcm_u16le \
++	--enable-muxer=pcm_u24be \
++	--enable-muxer=pcm_u24le \
++	--enable-muxer=pcm_u32be \
++	--enable-muxer=pcm_u32le \
++	--enable-muxer=pcm_u8 \
++	--enable-muxer=rawvideo \
++	--enable-muxer=rtp \
++	--enable-muxer=rtp_mpegts \
++	--enable-muxer=rtsp \
++	--enable-muxer=smjpeg \
++	--enable-muxer=smoothstreaming \
++	--enable-muxer=sox \
++	--enable-muxer=spdif \
++	--enable-muxer=spx \
++	--enable-muxer=wav \
++	--enable-muxer=webm \
++	--enable-muxer=webm_chunk \
++	--enable-muxer=webm_dash_manifest \
++	--enable-muxer=yuv4mpegpipe \
++	--enable-muxer=udp \
++	--enable-muxer=udplite \
++	--enable-muxer=unix \
++	--enable-demuxer=aac \
++	--enable-demuxer=sdp \
++	--enable-demuxer=ac3 \
++	--enable-demuxer=avi \
++	--enable-demuxer=dv \
++	--enable-demuxer=flac \
++	--enable-demuxer=g722 \
++	--enable-demuxer=g723_1 \
++	--enable-demuxer=g726 \
++	--enable-demuxer=g726le \
++	--enable-demuxer=g729 \
++	--enable-demuxer=gsm \
++	--enable-demuxer=h263 \
++	--enable-demuxer=h264 \
++	--enable-demuxer=hevc \
++	--enable-demuxer=m4v \
++	--enable-demuxer=matroska \
++	--enable-demuxer=mjpeg \
++	--enable-demuxer=mp3 \
++	--enable-demuxer=mpegps \
++	--enable-demuxer=mpegts \
++	--enable-demuxer=mpegtsraw \
++	--enable-demuxer=mpegvideo \
++	--enable-demuxer=mpjpeg \
++	--enable-demuxer=ogg \
++	--enable-demuxer=pcm_alaw \
++	--enable-demuxer=pcm_f32be \
++	--enable-demuxer=pcm_f32le \
++	--enable-demuxer=pcm_f64be \
++	--enable-demuxer=pcm_f64le \
++	--enable-demuxer=pcm_mulaw \
++	--enable-demuxer=pcm_s16be \
++	--enable-demuxer=pcm_s16le \
++	--enable-demuxer=pcm_s24be \
++	--enable-demuxer=pcm_s24le \
++	--enable-demuxer=pcm_s32be \
++	--enable-demuxer=pcm_s32le \
++	--enable-demuxer=pcm_s8 \
++	--enable-demuxer=pcm_u16be \
++	--enable-demuxer=pcm_u16le \
++	--enable-demuxer=pcm_u24be \
++	--enable-demuxer=pcm_u24le \
++	--enable-demuxer=pcm_u32be \
++	--enable-demuxer=pcm_u32le \
++	--enable-demuxer=pcm_u8 \
++	--enable-demuxer=rawvideo \
++	--enable-demuxer=sox \
++	--enable-demuxer=spdif \
++	--enable-demuxer=wav \
++	--enable-demuxer=webm_dash_manif \
++	--enable-demuxer=yuv4mpegpipe \
++	--enable-protocol=async \
++	--enable-protocol=cache \
++	--enable-protocol=concat \
++	--enable-protocol=crypto \
++	--enable-protocol=data \
++	--enable-protocol=ffrtmphttp \
++	--enable-protocol=file \
++	--enable-protocol=http \
++	--enable-protocol=md5 \
++	--enable-protocol=pipe \
++	--enable-protocol=rtmp \
++	--enable-protocol=rtmpt \
++	--enable-protocol=rtp \
++	--enable-protocol=srtp \
++	--enable-protocol=tcp \
++	--enable-protocol=udp \
++	--enable-protocol=udplite
++
+ 
+ #enable parsers
+ FFMPEGCONF += \
+@@ -63,22 +205,23 @@ FFMPEGCONF += \
  	--enable-encoder=libspeex \
  	--enable-decoder=libspeex \
  	--enable-encoder=libopus \
@@ -39,7 +199,7 @@ index b1db5d131..affd4e612 100644
  
  #platform specific options
  
-@@ -120,13 +121,8 @@ FFMPEGCONF += \
+@@ -117,13 +260,8 @@ FFMPEGCONF += \
  	--target-os=linux \
  	--enable-indev=v4l2 \
  	--enable-indev=xcbgrab \
@@ -55,7 +215,7 @@ index b1db5d131..affd4e612 100644
  endif
  endif
  
-@@ -216,6 +212,7 @@ endif
+@@ -213,6 +351,7 @@ endif
  	cd $< && $(HOSTVARS) ./configure \
  		--extra-cflags="$(CFLAGS)" \
  		--extra-ldflags="$(LDFLAGS)" $(FFMPEGCONF) \
@@ -121,25 +281,25 @@ index 2c0479271..be73ee822 100644
 +	cd $< && $(MAKE) install VERBOSE=1
  	touch $@
 diff --git a/contrib/src/restbed/rules.mak b/contrib/src/restbed/rules.mak
-index ac48aea3f..30bb33eda 100644
+index 957a06f8b..6b7fed03e 100644
 --- a/contrib/src/restbed/rules.mak
 +++ b/contrib/src/restbed/rules.mak
-@@ -38,7 +38,13 @@ RESTBED_CONF = -DBUILD_TESTS=NO \
- 			-DBUILD_SSL=NO \
+@@ -39,7 +39,13 @@ RESTBED_CONF = -DBUILD_TESTS=NO \
  			-DBUILD_SHARED=NO \
+ 			-DCMAKE_INCLUDE_PATH=$(PREFIX)/include \
  			-DCMAKE_INSTALL_PREFIX=$(PREFIX) \
 -			-DCMAKE_INSTALL_LIBDIR=lib
 +			-DCMAKE_INSTALL_LIBDIR=lib \
-+                        -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-+                        -DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
-+                        -DCMAKE_AR=/usr/bin/gcc-ar \
-+                        -DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
-+                        -DCMAKE_CXX_ARCHIVE_FINISH=true
++			-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
++			-DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
++			-DCMAKE_AR=/usr/bin/gcc-ar \
++			-DCMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" \
++			-DCMAKE_CXX_ARCHIVE_FINISH=true
 +
  
- $(TARBALLS)/kashmir.tar.gz:
- 	$(call download,https://github.com/Corvusoft/kashmir-dependency/archive/master.tar.gz)
-@@ -54,7 +60,7 @@ restbed: restbed-$(RESTBED_VERSION).tar.gz kashmir.tar.gz .sum-restbed
+ restbed: restbed-$(RESTBED_VERSION).tar.gz .sum-restbed
+ 	$(UNPACK)
+@@ -49,7 +55,7 @@ restbed: restbed-$(RESTBED_VERSION).tar.gz .sum-restbed
  
  .restbed: restbed toolchain.cmake
  	cd $< && $(HOSTVARS) $(CMAKE) $(RESTBED_CONF) .
@@ -175,3 +335,17 @@ index 8ea84c3e5..8b6775929 100644
 -	cd $< && $(MAKE) install
 +	cd $< && $(MAKE) install VERBOSE=1
  	touch $@
+diff --git a/src/media/media_decoder.h b/src/media/media_decoder.h
+index 71fdcc0c0..8bce3e97c 100644
+--- a/src/media/media_decoder.h
++++ b/src/media/media_decoder.h
+@@ -21,6 +21,9 @@
+ 
+ #include "config.h"
+ 
++#include "libav_deps.h" // MUST BE INCLUDED FIRST
++
++
+ #ifdef RING_VIDEO
+ #include "video/video_base.h"
+ #include "video/video_scaler.h"
