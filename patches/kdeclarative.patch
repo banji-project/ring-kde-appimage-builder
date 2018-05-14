@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index dbf9ed3..bc50ac3 100644
+index 71f6d1a..55b0f3e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -14,7 +14,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${ECM_MODULE_PATH} ${ECM
@@ -58,19 +58,20 @@ index 13aef05..4cbb9cb 100644
  endif()
  
 diff --git a/src/kdeclarative/CMakeLists.txt b/src/kdeclarative/CMakeLists.txt
-index da2e673..0149421 100644
+index 014b400..7272cd9 100644
 --- a/src/kdeclarative/CMakeLists.txt
 +++ b/src/kdeclarative/CMakeLists.txt
-@@ -5,7 +5,7 @@ set(kdeclarative_SRCS
+@@ -5,7 +5,8 @@ set(kdeclarative_SRCS
    qmlobjectsharedengine.cpp
    kdeclarative.cpp
    private/kiconprovider.cpp
 -  private/kioaccessmanagerfactory.cpp
 +#  private/kioaccessmanagerfactory.cpp
-   private/qmlobject_p.h
++#  private/qmlobject_p.h
  )
  
-@@ -21,10 +21,11 @@ target_link_libraries(KF5Declarative
+ add_library(KF5Declarative ${kdeclarative_SRCS})
+@@ -20,10 +21,11 @@ target_link_libraries(KF5Declarative
      KF5::ConfigCore # KCoreConfigSkeleton, in ConfigPropertyMap
      Qt5::Qml
      KF5::Package
@@ -198,10 +199,10 @@ index 288c82f..0000000
 -
 -#endif
 diff --git a/src/qmlcontrols/CMakeLists.txt b/src/qmlcontrols/CMakeLists.txt
-index f6662f3..375fad3 100644
+index 190110e..22ba384 100644
 --- a/src/qmlcontrols/CMakeLists.txt
 +++ b/src/qmlcontrols/CMakeLists.txt
-@@ -11,10 +11,6 @@ if(KF5CoreAddons_FOUND)
+@@ -12,10 +12,6 @@ if(KF5CoreAddons_FOUND)
  endif()
  
  

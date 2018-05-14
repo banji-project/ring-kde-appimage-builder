@@ -1,0 +1,36 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f92c2b0..e89c43a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ cmake_minimum_required(VERSION 3.0)
+ 
+-set(KF5_VERSION "5.44.0") # handled by release scripts
+-set(KF5_DEP_VERSION "5.44.0") # handled by release scripts
++set(KF5_VERSION "5.39.0") # handled by release scripts
++set(KF5_DEP_VERSION "5.39.0") # handled by release scripts
+ 
+ project(kirigami2 VERSION ${KF5_VERSION})
+ 
+@@ -47,7 +47,7 @@ endif(STATIC_LIBRARY)
+ 
+ ################# set KDE specific information #################
+ 
+-find_package(ECM 5.44.0 NO_MODULE)
++find_package(ECM 5.39.0 NO_MODULE)
+ set_package_properties(ECM PROPERTIES TYPE REQUIRED DESCRIPTION "Extra CMake Modules." URL "https://projects.kde.org/projects/kdesupport/extra-cmake-modules")
+ 
+ # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
+diff --git a/src/styles/org.kde.desktop/Units.qml b/src/styles/org.kde.desktop/Units.qml
+index b995f17..4822387 100644
+--- a/src/styles/org.kde.desktop/Units.qml
++++ b/src/styles/org.kde.desktop/Units.qml
+@@ -98,7 +98,7 @@ QtObject {
+ 
+     property int toolTipDelay: 700
+ 
+-    readonly property QtObject __styleItem: QtQuickControlsPrivate.StyleItem {elementType: "frame" }
++    readonly property QtObject __styleItem: undefined // QtQuickControlsPrivate.StyleItem {elementType: "frame" }
+ 
+     /**
+      * How much the mouse scroll wheel scrolls, expressed in lines of text.

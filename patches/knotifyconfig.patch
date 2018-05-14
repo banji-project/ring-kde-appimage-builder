@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index d1f13a6..b60a230 100644
+index f17e780..b849129 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -15,7 +15,7 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
@@ -25,10 +25,10 @@ index d1f13a6..b60a230 100644
  # Includes
  
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index aeb9fc3..9853e12 100644
+index a83a054..93cb222 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -29,8 +29,9 @@ target_link_libraries(KF5NotifyConfig
+@@ -27,8 +27,9 @@ target_link_libraries(KF5NotifyConfig
          PUBLIC
              Qt5::Widgets
          PRIVATE
@@ -40,7 +40,7 @@ index aeb9fc3..9853e12 100644
              Qt5::DBus)
  
 diff --git a/src/knotifyconfigactionswidget.cpp b/src/knotifyconfigactionswidget.cpp
-index 3857891..001a96f 100644
+index bb1c784..4157c32 100644
 --- a/src/knotifyconfigactionswidget.cpp
 +++ b/src/knotifyconfigactionswidget.cpp
 @@ -19,6 +19,8 @@
@@ -54,37 +54,48 @@ index 3857891..001a96f 100644
  #if HAVE_PHONON
 @@ -33,7 +35,7 @@ KNotifyConfigActionsWidget::KNotifyConfigActionsWidget(QWidget *parent)
      //Show sounds directory by default
-     QStringList soundDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "sounds", QStandardPaths::LocateDirectory);
+     QStringList soundDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("sounds"), QStandardPaths::LocateDirectory);
      if (!soundDirs.isEmpty()) {
 -        m_ui.Sound_select->setStartDir(QUrl::fromLocalFile(soundDirs.last()));
 +//        m_ui.Sound_select->setStartDir(QUrl::fromLocalFile(soundDirs.last()));
      }
  
-     m_ui.Sound_play->setIcon(QIcon::fromTheme("media-playback-start"));
-@@ -77,9 +79,9 @@ void KNotifyConfigActionsWidget::setConfigElement(KNotifyConfigElement *config)
-     m_ui.Taskbar_check->setChecked(actions.contains("Taskbar"));
-     m_ui.TTS_check->setChecked(actions.contains("TTS"));
+     m_ui.Sound_play->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
+@@ -67,6 +69,7 @@ KNotifyConfigActionsWidget::KNotifyConfigActionsWidget(QWidget *parent)
+ void KNotifyConfigActionsWidget::setConfigElement(KNotifyConfigElement *config)
+ {
+     bool blocked = blockSignals(true); //to block the changed() signal
++
+     QString prstring = config->readEntry(QStringLiteral("Action"));
+     QStringList actions = prstring.split(QLatin1Char('|'));
  
--    m_ui.Sound_select->setUrl(QUrl(config->readEntry("Sound", true)));
--    m_ui.Logfile_select->setUrl(QUrl(config->readEntry("Logfile", true)));
--    m_ui.Execute_select->setUrl(QUrl::fromLocalFile(config->readEntry("Execute")));
-+    m_ui.Sound_select->setText(QUrl(config->readEntry("Sound", true)).toLocalFile());
-+    m_ui.Logfile_select->setText(QUrl(config->readEntry("Logfile", true)).toLocalFile());
-+    m_ui.Execute_select->setText(QUrl::fromLocalFile(config->readEntry("Execute")).toLocalFile());
-     m_ui.TTS_select->setText(config->readEntry("TTS"));
+@@ -77,10 +80,11 @@ void KNotifyConfigActionsWidget::setConfigElement(KNotifyConfigElement *config)
+     m_ui.Taskbar_check->setChecked(actions.contains(QStringLiteral("Taskbar")));
+     m_ui.TTS_check->setChecked(actions.contains(QStringLiteral("TTS")));
+ 
+-    m_ui.Sound_select->setUrl(QUrl(config->readEntry(QStringLiteral("Sound"), true)));
+-    m_ui.Logfile_select->setUrl(QUrl(config->readEntry(QStringLiteral("Logfile"), true)));
+-    m_ui.Execute_select->setUrl(QUrl::fromLocalFile(config->readEntry(QStringLiteral("Execute"))));
++    m_ui.Sound_select->setText(config->readEntry(QStringLiteral("Sound"), true));
++    m_ui.Logfile_select->setText(config->readEntry(QStringLiteral("Logfile"), true));
++    m_ui.Execute_select->setText(QUrl::fromLocalFile(config->readEntry(QStringLiteral("Execute"))).path());
+     m_ui.TTS_select->setText(config->readEntry(QStringLiteral("TTS")));
++
      if (m_ui.TTS_select->text() == QLatin1String("%e")) {
          m_ui.TTS_combo->setCurrentIndex(1);
-@@ -116,8 +118,8 @@ void KNotifyConfigActionsWidget::save(KNotifyConfigElement *config)
-     config->writeEntry("Action", actions.join("|"));
+     } else if (m_ui.TTS_select->text() == QLatin1String("%m") || m_ui.TTS_select->text() == QLatin1String("%s")) {
+@@ -116,8 +120,9 @@ void KNotifyConfigActionsWidget::save(KNotifyConfigElement *config)
+     config->writeEntry(QStringLiteral("Action"), actions.join(QLatin1Char('|')));
  
-     config->writeEntry("Sound", m_ui.Sound_select->text());  // don't use .url() here, .notifyrc files have predefined "static" entries with no path
--    config->writeEntry("Logfile", m_ui.Logfile_select->url().toString());
--    config->writeEntry("Execute", m_ui.Execute_select->url().toLocalFile());
-+    config->writeEntry("Logfile", m_ui.Logfile_select->text());
-+    config->writeEntry("Execute", m_ui.Execute_select->text());
+     config->writeEntry(QStringLiteral("Sound"), m_ui.Sound_select->text());  // don't use .url() here, .notifyrc files have predefined "static" entries with no path
+-    config->writeEntry(QStringLiteral("Logfile"), m_ui.Logfile_select->url().toString());
+-    config->writeEntry(QStringLiteral("Execute"), m_ui.Execute_select->url().toLocalFile());
++    config->writeEntry(QStringLiteral("Logfile"), m_ui.Logfile_select->text());
++    config->writeEntry(QStringLiteral("Execute"), m_ui.Execute_select->text());
++
      switch (m_ui.TTS_combo->currentIndex()) {
      case 0:
-         config->writeEntry("TTS", "%s");
+         config->writeEntry(QStringLiteral("TTS"), QStringLiteral("%s"));
 diff --git a/src/knotifyconfigactionswidgetbase.ui b/src/knotifyconfigactionswidgetbase.ui
 index 993eebe..bb4a799 100644
 --- a/src/knotifyconfigactionswidgetbase.ui
@@ -155,7 +166,7 @@ index 993eebe..bb4a799 100644
   <connections>
    <connection>
 diff --git a/src/knotifyconfigwidget.cpp b/src/knotifyconfigwidget.cpp
-index f0cb10e..6ea48f6 100644
+index 1c06f91..21670cf 100644
 --- a/src/knotifyconfigwidget.cpp
 +++ b/src/knotifyconfigwidget.cpp
 @@ -26,6 +26,7 @@

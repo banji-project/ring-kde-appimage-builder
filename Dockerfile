@@ -53,30 +53,30 @@ RUN emerge -e @world || echo 'Failed, but keep going (self host)'
 RUN cat /etc/portage/make.conf
 
 # Download Qt in order to build a minimal library
-RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.9/5.9.3/single/qt-everywhere-opensource-src-5.9.3.tar.xz 
-RUN tar -xpvf qt-everywhere-opensource-src-5.9.3.tar.xz
+RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.9/5.9.5/single/qt-everywhere-opensource-src-5.9.5.tar.xz 
+RUN tar -xpvf qt-everywhere-opensource-src-5.9.5.tar.xz
 
 # Qt5 needs the Gl API
 RUN emerge mesa freeglut dev-python/common
 
 # Replace the default performance Qt flags for portability ones
-RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/common/qcc-base.conf
-RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/common/qcc-base.conf
-RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/common/gcc-base.conf
-RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/common/gcc-base.conf
-RUN echo 'QMAKE_CXXFLAGS -=-O3' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O3' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS -=-O2' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O2' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS=-Os' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE=-Os' >> /qt-everywhere-opensource-src-5.9.3/qtbase/mkspecs/linux-g++/qmake.conf
-RUN find /qt-everywhere-opensource-src-5.9.3/ | xargs grep O3 2> /dev/null \
+RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/common/qcc-base.conf
+RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/common/qcc-base.conf
+RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/common/gcc-base.conf
+RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/common/gcc-base.conf
+RUN echo 'QMAKE_CXXFLAGS -=-O3' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O3' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS -=-O2' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O2' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS=-Os' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE=-Os' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
+RUN find /qt-everywhere-opensource-src-5.9.5/ | xargs grep O3 2> /dev/null \
  | grep -v xml | grep -v Binary 2> /dev/null | cut -f1 -d ':' \
  | grep -E '\.(conf|mk|sh|am|in)$' | xargs sed -i 's/O3/Os/'
 
 # Build a static Qt package with as little system dependencies as
 # possible
-RUN cd qt-everywhere-opensource-src-5.9.3 &&\
+RUN cd qt-everywhere-opensource-src-5.9.5 &&\
   ./configure -v -release -opensource -confirm-license -reduce-exports -ssl \
    -qt-xcb -qt-xkbcommon -feature-accessibility -opengl desktop  -static -nomake examples \
    -nomake tests -skip qtwebengine -skip qtscript -skip qt3d -skip qtandroidextras \
@@ -86,8 +86,8 @@ RUN cd qt-everywhere-opensource-src-5.9.3 &&\
    -prefix /opt/usr -no-glib -qt-zlib -qt-freetype -ltcg -optimize-size
 
 # Build Qt, this is long
-RUN cd qt-everywhere-opensource-src-5.9.3 && make -j8
-RUN cd qt-everywhere-opensource-src-5.9.3 && make install
+RUN cd qt-everywhere-opensource-src-5.9.5 && make -j8
+RUN cd qt-everywhere-opensource-src-5.9.5 && make install
 RUN rm -rf qt-e # Keep the docker image smaller
 
 # Not very clean, but running tests in this environment hits a lot of
@@ -125,8 +125,8 @@ RUN mkdir /opt/ring-kde.AppDir -p
 # Fetch the ring library (without the daemon)
 RUN git clone https://github.com/savoirfairelinux/ring-daemon --progress --verbose
 
-# A new dependency was introduced on October 2 2017, I don't care about it
-RUN cd ring-daemon
+# FIXME more recent commit have both GnuTLS and LibreSSL deps, this wont work
+RUN cd ring-daemon && git checkout 0da903b28efcbe6d78bde433e53c7debb7984328
 
 # Add the patch now as the daemon use them
 ADD patches /bootstrap/patches
@@ -193,6 +193,8 @@ ADD CMakeRingWrapper.txt.in /bootstrap/CMakeRingWrapper.txt.in
 ADD CMakeWrapper.txt.in /bootstrap/CMakeWrapper.txt.in
 ADD cmake /bootstrap/cmake
 
+RUN cd /bootstrap/build && wget http://launchpad.net/ubuntu/+archive/primary/+files/libdbusmenu-qt_0.9.3+16.04.20160218.orig.tar.gz
+
 # Build all the frameworks and prepare Ring-KDE
 RUN cd /bootstrap/build && CXXFLAGS="" LDFLAGS="" cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
  -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 \
@@ -248,9 +250,12 @@ RUN sed -i 's/DBusActivatable=true/X-DBusActivatable=true/' -i /opt/ring-kde.App
 
 ADD AppRun /opt/ring-kde.AppDir/
 
+ADD geticons.sh /
+RUN git clone https://anongit.kde.org/breeze-icons /breeze-icons
+
 CMD cd /bootstrap/build && make -j8 install && find /opt/ring-kde.AppDir/ \
   | grep -v ring-kde | xargs rm -rf &&\
    rm -rf /opt/ring-kde.AppDir/share/locale/ && /appimagetool-x86_64.AppImage\
-  /opt/ring-kde.AppDir/ /export/ring-kde.appimage
+  /opt/ring-kde.AppDir/ /export/ring-kde-$(date +%Y%m%d-%s).appimage
 
 #CMAKE_AR=/usr/bin/gcc-ar CMAKE_CXX_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" CMAKE_CXX_ARCHIVE_FINISH=true NM=/usr/bin/gcc-nm AR=/usr/bin/gcc-ar RANLIB=/usr/bin/gcc-ranlib LDFLAGS="-Os -flto=8 -ffunction-sections -fdata-sections -static-libstdc++ -Wl,--export-dynamic" CXXFLAGS="-Os -flto=8 -ffunction-sections -fdata-sections -fvisibility=default -static-libgcc -static-libstdc++ -Wno-error=unused-result -Wno-unused-result" CFLAGS="-Os -flto=8 -Wno-error=unused-result -Wno-unused-result  -ffunction-sections -fdata-sections -Wno-error=unused-result -Wno-unused-result"

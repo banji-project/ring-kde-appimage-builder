@@ -50,6 +50,79 @@ else()
     set(LIBDIR_NAME "lib64")
 endif()
 
+function(install_tarball name frmname filepath) #opt: EXTRA_LD BRANCH
+    list(APPEND ALL_KF5_LIST "${CMAKE_CURRENT_BINARY_DIR}/${name}/install/")
+    set(ALL_KF5_LIST ${ALL_KF5_LIST} PARENT_SCOPE)
+
+    if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${name}/done")
+        set(FRM_DIR "${CMAKE_CURRENT_BINARY_DIR}/${name}/install/${LIBDIR_NAME}/cmake/${frmname}/")
+        set(${frmname}_DIR "${FRM_DIR}" PARENT_SCOPE)
+        set(ALL_KF5_DIR "${ALL_KF5_DIR}\nset(${frmname}_DIR \"${FRM_DIR}\")" PARENT_SCOPE)
+
+        return()
+    endif()
+
+    # Extra aurguments are assumed to be LD_FLAGS
+    set(EXTRA_LD "${ARGV3}")
+
+    # Wrap each framework in an additional CMakeLists.txt to add static
+    # Qt support
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name})
+    set(SUB_DIR_NAME ${name})
+    configure_file(${CMAKE_SOURCE_DIR}/CMakeWrapper.txt.in ${CMAKE_CURRENT_BINARY_DIR}/${name}/CMakeLists.txt @ONLY)
+
+    #if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name})
+        execute_process(COMMAND
+             rm -rf ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name}/*
+        )
+
+        execute_process(COMMAND
+             tar -xpf ${filepath} --strip 1 -C ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name}/
+             RESULT_VARIABLE CLONE_RES
+        )
+
+        if (NOT ${CLONE_RES} MATCHES 0)
+            message(FATAL_ERROR "Could not unpack ${filepath}")
+        endif()
+
+    #endif()
+
+    # Apply the patches until they are merged
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/patches/${name}.patch)
+        execute_process(COMMAND
+            bash -c "patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/patches/${name}.patch"
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${name}/${name}
+        )
+    endif()
+
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${name}/build/)
+
+    execute_process(COMMAND
+        cmake ../ -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${name}/install -Wno-dev -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${name}/build/
+        RESULT_VARIABLE CMAKE_CMD_RES
+    )
+
+    execute_process(COMMAND
+        make VERBOSE=1 ENABLE_VERBOSE=1 -j8 install
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${name}/build/
+        RESULT_VARIABLE MAKE_CMD_RES
+    )
+
+    if(${CMAKE_CMD_RES} MATCHES 0 AND ${MAKE_CMD_RES} MATCHES 0)
+        set(FRM_DIR "${CMAKE_CURRENT_BINARY_DIR}/${name}/install/${LIBDIR_NAME}/cmake/${frmname}/")
+
+        set(${frmname}_DIR "${FRM_DIR}" PARENT_SCOPE)
+        set(ALL_KF5_DIR "${ALL_KF5_DIR}\nset(${frmname}_DIR \"${FRM_DIR}\")" PARENT_SCOPE)
+
+        # Make sure not to do this everytime
+        file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${name}/done" "1")
+    else()
+        message(FATAL_ERROR "Failed to compile ${frmname} ${CMAKE_CMD_RES} ${MAKE_CMD_RES}")
+        exit(1)
+    endif()
+endfunction()
+
 function(fetch_framework name frmname) #opt: EXTRA_LD BRANCH
     list(APPEND ALL_KF5_LIST "${CMAKE_CURRENT_BINARY_DIR}/${name}/install/")
     set(ALL_KF5_LIST ${ALL_KF5_LIST} PARENT_SCOPE)
@@ -75,7 +148,7 @@ function(fetch_framework name frmname) #opt: EXTRA_LD BRANCH
         if (NOT "${ARGV3}" STREQUAL "")
             set(BRANCH "${ARGV3}")
         else()
-            set(BRANCH v5.39.0)
+            set(BRANCH v5.44.0)
         endif()
 
         execute_process(COMMAND
@@ -134,6 +207,8 @@ endfunction()
 
 #TODO install ECM normally
 #fetch_framework(extra-cmake-modules "")
+
+install_tarball(dbusmenu-qt5 dbusmenu-qt5 /bootstrap/build/libdbusmenu-qt_0.9.3+16.04.20160218.orig.tar.gz)
 
 fetch_framework(kcoreaddons KF5CoreAddons)
 fetch_framework(kconfig KF5Config)

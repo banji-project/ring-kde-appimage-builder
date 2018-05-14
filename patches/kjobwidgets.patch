@@ -1,21 +1,15 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index cdcadeb..4fa13af 100644
+index 00ea8b4..290b86e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -28,11 +28,8 @@ endif()
+@@ -31,7 +31,6 @@ set(HAVE_X11 ${X11_FOUND})
+ find_package(KF5CoreAddons ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5WidgetsAddons ${KF5_DEP_VERSION} REQUIRED)
  
- set(HAVE_X11 ${X11_FOUND})
- 
--if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
--    find_package(KF5CoreAddons ${KF5_DEP_VERSION} REQUIRED)
--    find_package(KF5WidgetsAddons ${KF5_DEP_VERSION} REQUIRED)
--endif()
 -
-+find_package(KF5CoreAddons ${KF5_DEP_VERSION} REQUIRED)
-+find_package(KF5WidgetsAddons ${KF5_DEP_VERSION} REQUIRED)
- 
  include(GenerateExportHeader)
  include(ECMSetupVersion)
+ include(ECMGenerateHeaders)
 diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
 index ddabae4..5d513dd 100644
 --- a/autotests/CMakeLists.txt
@@ -32,10 +26,10 @@ index ddabae4..5d513dd 100644
  include(ECMAddTests)
  
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index a8250a3..2e1a479 100644
+index 50c93eb..7032a76 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -109,7 +109,7 @@ if(BUILD_QCH)
+@@ -110,7 +110,7 @@ if(BUILD_QCH)
          ORG_DOMAIN org.kde
          SOURCES # using only public headers, to cover only public API
              ${KJobWidgets_HEADERS}

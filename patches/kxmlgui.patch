@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 4bc74c8..7e0f900 100644
+index f873b4b..14d7eb1 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -36,7 +36,7 @@ add_feature_info(QCH ${BUILD_QCH} "API documentation in QCH format (for e.g. Qt
@@ -29,7 +29,7 @@ index 4bc74c8..7e0f900 100644
                         PURPOSE "Support for Get Hot New Stuff in KXMLGUI"
                         URL "https://projects.kde.org/attica"
 diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
-index dc5af5e..72ac2a2 100644
+index cc5bef4..eb9327a 100644
 --- a/autotests/CMakeLists.txt
 +++ b/autotests/CMakeLists.txt
 @@ -1,5 +1,11 @@
@@ -43,13 +43,13 @@ index dc5af5e..72ac2a2 100644
 +
 +find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Xml)
  
- remove_definitions(-DQT_NO_CAST_FROM_BYTEARRAY)
- remove_definitions(-DQT_NO_CAST_FROM_ASCII)
+ include(ECMAddTests)
+ 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 20e1a84..b0c09e0 100644
+index 1a9442c..bbc31f8 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -82,15 +82,16 @@ PUBLIC
+@@ -90,16 +90,17 @@ PUBLIC
      Qt5::Widgets        #QWidget is used everywhere
      KF5::ConfigCore         #Reading config for ToolbarIcons, Shortcut Schemes...
      KF5::ConfigWidgets      #KStandardAction, KToggleAction...
@@ -59,6 +59,7 @@ index 20e1a84..b0c09e0 100644
  PRIVATE
      Qt5::Network        #QNetworkAccessManager in kaboutapplicationpersonmodel_p
      Qt5::PrintSupport   #QPrinter in kshortcutseditor
+     ${QT5COREPRIVATE}   #QSystemLocale in initializeLanguages
      KF5::CoreAddons     #KAboutData
      KF5::WidgetsAddons
 -    KF5::ItemViews           #KWidgetItemDelegate in KAboutApplicationPersonListDelegate
@@ -69,7 +70,7 @@ index 20e1a84..b0c09e0 100644
      ${XMLGUI_EXTRA_LIBS}
  )
 diff --git a/src/kbugreport.cpp b/src/kbugreport.cpp
-index cdfb4b0..dd22d82 100644
+index d3d1a6c..1c2f165 100644
 --- a/src/kbugreport.cpp
 +++ b/src/kbugreport.cpp
 @@ -26,6 +26,7 @@
@@ -144,14 +145,14 @@ index 21b333b..6d9e9b7 100644
      if (autoSaveSettings) {
          if (callCompression == CompressCalls) {
 diff --git a/src/ksendbugmail/smtp.cpp b/src/ksendbugmail/smtp.cpp
-index d26ecf4..aee7693 100644
+index 5d12fd3..3116d28 100644
 --- a/src/ksendbugmail/smtp.cpp
 +++ b/src/ksendbugmail/smtp.cpp
-@@ -173,6 +173,7 @@ void SMTP::connectTimerTick(void)
+@@ -172,7 +172,6 @@ void SMTP::connectTimerTick(void)
+     delete sock;
      sock = nullptr;
  
-     // qDebug() << "connecting to " << serverHost << ":" << hostPort << " ..... ";
-+
+-    // qCDebug(DEBUG_KXMLGUI) << "connecting to " << serverHost << ":" << hostPort << " ..... ";
      sock = new QSslSocket(this);
      sock->connectToHost(serverHost, hostPort);
  
