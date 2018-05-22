@@ -1,12 +1,12 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f92c2b0..e89c43a 100644
+index 7164ce1..54cb401 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,7 +1,7 @@
  cmake_minimum_required(VERSION 3.0)
  
--set(KF5_VERSION "5.44.0") # handled by release scripts
--set(KF5_DEP_VERSION "5.44.0") # handled by release scripts
+-set(KF5_VERSION "5.45.0") # handled by release scripts
+-set(KF5_DEP_VERSION "5.45.0") # handled by release scripts
 +set(KF5_VERSION "5.39.0") # handled by release scripts
 +set(KF5_DEP_VERSION "5.39.0") # handled by release scripts
  
@@ -16,21 +16,34 @@ index f92c2b0..e89c43a 100644
  
  ################# set KDE specific information #################
  
--find_package(ECM 5.44.0 NO_MODULE)
+-find_package(ECM 5.45.0 NO_MODULE)
 +find_package(ECM 5.39.0 NO_MODULE)
  set_package_properties(ECM PROPERTIES TYPE REQUIRED DESCRIPTION "Extra CMake Modules." URL "https://projects.kde.org/projects/kdesupport/extra-cmake-modules")
  
  # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-diff --git a/src/styles/org.kde.desktop/Units.qml b/src/styles/org.kde.desktop/Units.qml
-index b995f17..4822387 100644
---- a/src/styles/org.kde.desktop/Units.qml
-+++ b/src/styles/org.kde.desktop/Units.qml
-@@ -98,7 +98,7 @@ QtObject {
- 
-     property int toolTipDelay: 700
- 
--    readonly property QtObject __styleItem: QtQuickControlsPrivate.StyleItem {elementType: "frame" }
-+    readonly property QtObject __styleItem: undefined // QtQuickControlsPrivate.StyleItem {elementType: "frame" }
- 
-     /**
-      * How much the mouse scroll wheel scrolls, expressed in lines of text.
+diff --git a/kirigami.qrc b/kirigami.qrc
+index 782cc19..2af98dd 100644
+--- a/kirigami.qrc
++++ b/kirigami.qrc
+@@ -39,6 +39,7 @@
+         <file alias="templates/private/ScrollView.qml">src/controls/templates/private/ScrollView.qml</file>
+         <file alias="templates/private/BackButton.qml">src/controls/templates/private/BackButton.qml</file>
+         <file alias="templates/private/ForwardButton.qml">src/controls/templates/private/ForwardButton.qml</file>
++        <file alias="templates/private/IconPropertiesGroup.qml">src/controls/templates/private/IconPropertiesGroup.qml</file>
+         <file alias="templates/OverlayDrawer.qml">src/controls/templates/OverlayDrawer.qml</file>
+         <file alias="templates/OverlaySheet.qml">src/controls/templates/OverlaySheet.qml</file>
+         <file alias="templates/SwipeListItem.qml">src/controls/templates/SwipeListItem.qml</file>
+diff --git a/src/controls/templates/OverlayDrawer.qml b/src/controls/templates/OverlayDrawer.qml
+index 4e1d99a..2dbe809 100644
+--- a/src/controls/templates/OverlayDrawer.qml
++++ b/src/controls/templates/OverlayDrawer.qml
+@@ -318,7 +318,8 @@ T2.Drawer {
+             root.enter.enabled = false;
+             root.exit.enabled = false;
+         } else {
+-            positionResetAnim.to = position > 0.5 ? 1 : 0;
++           drawerOpen = position > 0.5 ? 1 : 0;
++            positionResetAnim.to = drawerOpen;
+             positionResetAnim.running = true
+             root.enter.enabled = true;
+             root.exit.enabled = true;

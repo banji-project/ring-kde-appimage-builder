@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a33275e..d3ae109 100644
+index 7660763..4e63c3c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -34,7 +34,7 @@ ecm_setup_version(PROJECT
@@ -26,7 +26,7 @@ index a33275e..d3ae109 100644
  if (Phonon4Qt5_FOUND)
    add_definitions(-DHAVE_PHONON4QT5)
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index e6be420..b257bcf 100644
+index e6be420..03bd973 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -68,6 +68,8 @@ target_include_directories(KF5Notifications INTERFACE "$<INSTALL_INTERFACE:${KDE
@@ -49,6 +49,15 @@ index e6be420..b257bcf 100644
  if(APPLE)
    target_link_libraries(KF5Notifications PRIVATE Qt5::MacExtras)
  endif()
+@@ -99,7 +97,7 @@ if(X11_XTest_FOUND)
+ endif()
+ 
+ if(HAVE_DBUSMENUQT)
+-  target_link_libraries(KF5Notifications PRIVATE dbusmenu-qt5)
++#  target_link_libraries(KF5Notifications PRIVATE dbusmenu-qt5)
+ endif()
+ 
+ set_target_properties(KF5Notifications PROPERTIES VERSION   ${KNOTIFICATIONS_VERSION_STRING}
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
 index eac110a..02b3e4a 100644
 --- a/tests/CMakeLists.txt
