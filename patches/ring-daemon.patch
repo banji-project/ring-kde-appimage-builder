@@ -1,15 +1,17 @@
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index fbe1e581e..0c69c98f1 100644
+index 119ffb6a3..befbaa8fc 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -19,14 +19,156 @@ FFMPEGCONF += \
+@@ -19,7 +19,7 @@ FFMPEGCONF += \
  	--enable-zlib \
  	--enable-gpl \
  	--enable-swscale \
 -	--enable-protocols \
 +	--disable-protocols \
  	--enable-bsfs \
- 	--disable-programs
+ 	--disable-filters \
+ 	--disable-programs \
+@@ -27,8 +27,150 @@ FFMPEGCONF += \
  
  #enable muxers/demuxers
  FFMPEGCONF += \
@@ -162,13 +164,17 @@ index fbe1e581e..0c69c98f1 100644
  
  #enable parsers
  FFMPEGCONF += \
-@@ -63,22 +205,23 @@ FFMPEGCONF += \
+@@ -68,7 +210,8 @@ FFMPEGCONF += \
  	--enable-encoder=libspeex \
  	--enable-decoder=libspeex \
  	--enable-encoder=libopus \
 -	--enable-decoder=libopus
 +	--enable-decoder=libopus \
 +        --disable-libopenjpeg
+ 
+ # decoders for ringtones and audio streaming
+ FFMPEGCONF += \
+@@ -104,18 +247,18 @@ FFMPEGCONF += \
  
  #encoders/decoders for images
  FFMPEGCONF += \
@@ -197,9 +203,9 @@ index fbe1e581e..0c69c98f1 100644
 +	--disable-encoder=tiff \
 +	--disable-decoder=tiff
  
- #platform specific options
- 
-@@ -117,13 +260,8 @@ FFMPEGCONF += \
+ #filters
+ FFMPEGCONF += \
+@@ -165,15 +308,8 @@ FFMPEGCONF += \
  	--target-os=linux \
  	--enable-indev=v4l2 \
  	--enable-indev=xcbgrab \
@@ -209,13 +215,15 @@ index fbe1e581e..0c69c98f1 100644
 -	--enable-vaapi \
 -	--enable-hwaccel=h264_vaapi \
 -	--enable-hwaccel=mpeg4_vaapi \
--	--enable-hwaccel=h263_vaapi
+-	--enable-hwaccel=h263_vaapi \
+-	--enable-hwaccel=vp8_vaapi \
+-	--enable-hwaccel=mjpeg_vaapi
 +        --disable-vdpau \
 +        --disable-vaapi
  endif
  endif
  
-@@ -213,6 +351,7 @@ endif
+@@ -257,6 +393,7 @@ ffmpeg: ffmpeg-$(FFMPEG_HASH).tar.gz
  	cd $< && $(HOSTVARS) ./configure \
  		--extra-cflags="$(CFLAGS)" \
  		--extra-ldflags="$(LDFLAGS)" $(FFMPEGCONF) \
@@ -225,7 +233,7 @@ index fbe1e581e..0c69c98f1 100644
  	cd $< && $(MAKE) install-libs install-headers
  	touch $@
 diff --git a/contrib/src/jsoncpp/rules.mak b/contrib/src/jsoncpp/rules.mak
-index 5be14e876..e19ae86fe 100644
+index ff18b88fc..e19ae86fe 100644
 --- a/contrib/src/jsoncpp/rules.mak
 +++ b/contrib/src/jsoncpp/rules.mak
 @@ -10,7 +10,15 @@ endif
@@ -245,11 +253,13 @@ index 5be14e876..e19ae86fe 100644
  
  $(TARBALLS)/jsoncpp-$(JSONCPP_VERSION).tar.gz:
  	$(call download,$(JSONCPP_URL))
-@@ -23,5 +31,5 @@ jsoncpp: jsoncpp-$(JSONCPP_VERSION).tar.gz .sum-jsoncpp
+@@ -22,6 +30,6 @@ jsoncpp: jsoncpp-$(JSONCPP_VERSION).tar.gz .sum-jsoncpp
+ 	$(MOVE)
  
  .jsoncpp: jsoncpp toolchain.cmake
- 	cd $< && $(HOSTVARS) $(CMAKE) . ${JSONCPP_CMAKECONF}
+-	cd $< && $(HOSTVARS) $(CMAKE) ${JSONCPP_CMAKECONF}
 -	cd $< && $(MAKE) install
++	cd $< && $(HOSTVARS) $(CMAKE) . ${JSONCPP_CMAKECONF}
 +	cd $< && $(MAKE) install VERBOSE=1
  	touch $@
 diff --git a/contrib/src/msgpack/rules.mak b/contrib/src/msgpack/rules.mak
@@ -281,7 +291,7 @@ index 2c0479271..be73ee822 100644
 +	cd $< && $(MAKE) install VERBOSE=1
  	touch $@
 diff --git a/contrib/src/restbed/rules.mak b/contrib/src/restbed/rules.mak
-index 957a06f8b..6b7fed03e 100644
+index a8c517bc5..ff2295bbb 100644
 --- a/contrib/src/restbed/rules.mak
 +++ b/contrib/src/restbed/rules.mak
 @@ -39,7 +39,13 @@ RESTBED_CONF = -DBUILD_TESTS=NO \
@@ -299,7 +309,7 @@ index 957a06f8b..6b7fed03e 100644
  
  restbed: restbed-$(RESTBED_VERSION).tar.gz .sum-restbed
  	$(UNPACK)
-@@ -49,7 +55,7 @@ restbed: restbed-$(RESTBED_VERSION).tar.gz .sum-restbed
+@@ -47,7 +53,7 @@ restbed: restbed-$(RESTBED_VERSION).tar.gz .sum-restbed
  
  .restbed: restbed toolchain.cmake
  	cd $< && $(HOSTVARS) $(CMAKE) $(RESTBED_CONF) .
@@ -308,6 +318,20 @@ index 957a06f8b..6b7fed03e 100644
  	touch $@
  
  .sum-restbed: restbed-$(RESTBED_VERSION).tar.gz
+diff --git a/contrib/src/vpx/rules.mak b/contrib/src/vpx/rules.mak
+index acaf76e07..c97fdbbd4 100644
+--- a/contrib/src/vpx/rules.mak
++++ b/contrib/src/vpx/rules.mak
+@@ -87,7 +87,8 @@ VPX_CONF := \
+ 	--disable-install-docs \
+ 	--enable-realtime-only \
+ 	--enable-error-concealment \
+-	--disable-webm-io
++	--disable-webm-io \
++	--disable-avx --disable-avx512
+ 
+ ifdef HAVE_ANDROID
+ 	VPX_CONF += --disable-runtime-cpu-detect
 diff --git a/contrib/src/yaml-cpp/rules.mak b/contrib/src/yaml-cpp/rules.mak
 index 8ea84c3e5..8b6775929 100644
 --- a/contrib/src/yaml-cpp/rules.mak
@@ -336,16 +360,14 @@ index 8ea84c3e5..8b6775929 100644
 +	cd $< && $(MAKE) install VERBOSE=1
  	touch $@
 diff --git a/src/media/media_decoder.h b/src/media/media_decoder.h
-index 71fdcc0c0..8bce3e97c 100644
+index 64fd59a24..9fabb007f 100644
 --- a/src/media/media_decoder.h
 +++ b/src/media/media_decoder.h
-@@ -21,6 +21,9 @@
+@@ -21,6 +21,7 @@
  
  #include "config.h"
  
 +#include "libav_deps.h" // MUST BE INCLUDED FIRST
-+
-+
+ #include "rational.h"
+ 
  #ifdef RING_VIDEO
- #include "video/video_base.h"
- #include "video/video_scaler.h"

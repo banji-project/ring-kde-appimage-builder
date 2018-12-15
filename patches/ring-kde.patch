@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index d8d865e5..056cc6ae 100644
+index 2dd734f6..71664c67 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -96,6 +96,8 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
+@@ -120,6 +120,8 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
    PrintSupport
    QuickControls2
    Quick
@@ -11,7 +11,7 @@ index d8d865e5..056cc6ae 100644
  )
  
  #FIND_PACKAGE(Qt5TextToSpeech ${QT_MIN_VERSION} QUIET)
-@@ -121,7 +123,10 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
+@@ -145,7 +147,10 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
    NotifyConfig
    GlobalAccel
    Declarative
@@ -24,10 +24,10 @@ index d8d865e5..056cc6ae 100644
  
  FIND_PACKAGE(KF5 "${AKO_DEP_VERSION}" QUIET COMPONENTS
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 52d17610..dbece063 100644
+index 9d219e93..fabba6e4 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -431,7 +431,6 @@ TARGET_LINK_LIBRARIES(ring-kde
+@@ -454,7 +454,6 @@ TARGET_LINK_LIBRARIES(ring-kde
    KF5::NotifyConfig
    KF5::GlobalAccel
    KF5::Declarative
@@ -36,7 +36,7 @@ index 52d17610..dbece063 100644
  
  IF (Qt5TextToSpeech_FOUND)
 diff --git a/src/main.cpp b/src/main.cpp
-index 98a023ea..4577502c 100644
+index 25c37c77..b8c9b6e5 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -1,3 +1,23 @@
@@ -63,7 +63,7 @@ index 98a023ea..4577502c 100644
  /***************************************************************************
   *   Copyright (C) 2009-2015 by Savoir-Faire Linux                         *
   *   Author : Jérémy Quentin <jeremy.quentin@savoirfairelinux.com>         *
-@@ -25,6 +45,11 @@
+@@ -26,6 +46,11 @@
  #include <KDBusService>
  #include <KAboutData>
  #include <KLocalizedString>
@@ -75,38 +75,33 @@ index 98a023ea..4577502c 100644
  
  //Ring
  #include "ringapplication.h"
-@@ -32,6 +57,9 @@
- #include "cmd.h"
+@@ -34,6 +59,7 @@
  #include <QQmlDebuggingEnabler>
  
-+#include <QQmlExtensionPlugin>
+ #include <QQmlExtensionPlugin>
 +#include <QQuickStyle>
-+
- constexpr static const char version[] = "3.0.0-alpha1";
  
- int main(int argc, char **argv)
-@@ -41,11 +69,18 @@ int main(int argc, char **argv)
-       //QQmlDebuggingEnabler enabler;
+ #ifdef KQUICKITEMVIEWS_USE_STATIC_PLUGIN
+ Q_IMPORT_PLUGIN(KQuickItemViews)
+@@ -57,6 +83,17 @@ int main(int argc, char **argv)
  
-       QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
--
-       RingApplication app( argc, argv );
--
+       KLocalizedString::setApplicationDomain("ring-kde");
+ 
 +qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_KirigamiPlugin().instance())->registerTypes("org.kde.kirigami");
 +qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QQc2DesktopStylePlugin().instance())->registerTypes("org.kde.desktop.private");
 +QQuickStyle::setStyle(":/org.kde.desktop");
-       KLocalizedString::setApplicationDomain("ring-kde");
- 
++
 +QColor col;
 +qDebug() << "KConfigGUI" << KConfigGui::DummyBobClass::bobcatlol << ConfigurationSkeleton::displayBookmarkDock();
 +qDebug() << qgetenv("KDE_COLOR_SCHEME_PATH");
 +
 +      app.setPalette(KColorScheme::createApplicationPalette(KSharedConfig::openConfig("Breeze Dark")));
 +
-       KAboutData about(QStringLiteral("ring-kde"),
-          i18n("ring-kde"),
-          /*QStringLiteral(*/version/*)*/,
-@@ -82,6 +117,7 @@ int main(int argc, char **argv)
++
+       //FIXME remove
+ #ifdef KQUICKITEMVIEWS_USE_STATIC_PLUGIN
+       qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_KQuickItemViews().instance())->registerTypes("org.kde.playground.kquickitemviews");
+@@ -103,6 +140,7 @@ int main(int argc, char **argv)
  #endif
  
        //The app will have quitted by now if an instance already exist
@@ -115,10 +110,10 @@ index 98a023ea..4577502c 100644
  
        const int retVal = app.exec();
 diff --git a/src/ringapplication.cpp b/src/ringapplication.cpp
-index 8e0bc291..37954a41 100644
+index 8029c88e..03650d49 100644
 --- a/src/ringapplication.cpp
 +++ b/src/ringapplication.cpp
-@@ -570,6 +570,8 @@ QQuickWindow* RingApplication::desktopWindow() const
+@@ -616,6 +616,8 @@ QQuickWindow* RingApplication::desktopWindow() const
  
           auto obj2 = component.create();
  

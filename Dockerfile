@@ -32,6 +32,8 @@ RUN emerge gcc
 RUN binutils-config --linker ld.gold
 RUN gcc-config `gcc-config -l | wc -l`
 
+RUN USE="-xattr -rsync-verify" emerge portage
+
 #RUN emerge -e @world --update || echo Failed, but keep going
 
 # Select the new GCC and rebuild
@@ -94,6 +96,9 @@ RUN rm -rf qt-e # Keep the docker image smaller
 # bugs due to the unexpected static linkage.
 RUN rm /opt/usr/lib/cmake/Qt5Test/Qt5TestConfig.cmake
 
+#HACK Fix a regression
+ADD GenerateExportHeader.cmake /usr/share/cmake/Modules/GenerateExportHeader.cmake
+
 # Set some variable before bootstrapping KF5
 ENV Qt5_DIR=/opt/usr/
 ENV CMAKE_PREFIX_PATH=/opt/usr/
@@ -125,18 +130,15 @@ RUN mkdir /opt/ring-kde.AppDir -p
 # Fetch the ring library (without the daemon)
 RUN git clone https://github.com/savoirfairelinux/ring-daemon --progress --verbose
 
-# FIXME more recent commit have both GnuTLS and LibreSSL deps, this wont work
-RUN cd ring-daemon && git checkout 0da903b28efcbe6d78bde433e53c7debb7984328
-
 # Add the patch now as the daemon use them
 ADD patches /bootstrap/patches
 
-RUN cd ring-daemon && git apply /bootstrap/patches/ring-daemon.patch
+RUN cd ring-daemon && git apply --reject --whitespace=fix /bootstrap/patches/ring-daemon.patch || echo 0
 
 RUN mkdir -p ring-daemon/contrib/native && cd ring-daemon/contrib/native &&\
  CXXFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" \
  CFLAGS=" -ffunction-sections -fdata-sections  -Wno-error=unused-result -Wno-unused-result -Os" ../bootstrap \
-   --disable-dbus-cpp --enable-vorbis --enable-ogg --enable-opus --enable-zlib\
+   --disable-dbus-cpp --enable-vorbis --enable-opus --enable-zlib\
    --enable-uuid --enable-uuid --enable-pcre
 
 # Try to force it to retry again and again until it works
@@ -174,7 +176,7 @@ RUN cp /usr/share/libtool/build-aux/config.sub /ring-daemon/contrib/native/uuid/
 
 #HACK!!!!!
 RUN cd ring-daemon/contrib/native &&\
- ../bootstrap --disable-dbus-cpp --enable-vorbis --enable-ogg \
+ ../bootstrap --disable-dbus-cpp  \
    --enable-opus --enable-zlib --enable-uuid --enable-uuid && make fetch-all
 
 # Build all the static dependencies
