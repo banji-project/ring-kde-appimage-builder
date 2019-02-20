@@ -1,0 +1,220 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f17e780..b849129 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,7 +15,7 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
+ set(REQUIRED_QT_VERSION 5.7.0)
+ 
+ # Required Qt5 components to build this framework
+-find_package(Qt5 ${REQUIRED_QT_VERSION} NO_MODULE REQUIRED Widgets DBus)
++find_package(Qt5 ${REQUIRED_QT_VERSION} NO_MODULE REQUIRED Widgets DBus Concurrent X11Extras Svg)
+ find_package(Qt5 ${REQUIRED_QT_VERSION} QUIET OPTIONAL_COMPONENTS TextToSpeech)
+ if (NOT Qt5TextToSpeech_FOUND)
+   message(STATUS "Qt5TextToSpeech not found, speech features will be disabled")
+@@ -30,7 +30,11 @@ find_package(Phonon4Qt5 4.6.60 NO_MODULE)
+ find_package(KF5Completion ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5Config ${KF5_DEP_VERSION} REQUIRED)
+ find_package(KF5I18n ${KF5_DEP_VERSION} REQUIRED)
+-find_package(KF5KIO ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5IconThemes ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5WindowSystem ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5DBusAddons ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5GuiAddons ${KF5_DEP_VERSION} REQUIRED)
++find_package(KF5Archive ${KF5_DEP_VERSION} REQUIRED)
+ 
+ # Includes
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index a83a054..93cb222 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -27,8 +27,9 @@ target_link_libraries(KF5NotifyConfig
+         PUBLIC
+             Qt5::Widgets
+         PRIVATE
++  KF5::ConfigCore
++  KF5::ConfigGui
+             KF5::I18n
+-            KF5::KIOWidgets     # KUrlRequester
+             ${PHONON_LIBS}
+             Qt5::DBus)
+ 
+diff --git a/src/knotifyconfigactionswidget.cpp b/src/knotifyconfigactionswidget.cpp
+index bb1c784..4157c32 100644
+--- a/src/knotifyconfigactionswidget.cpp
++++ b/src/knotifyconfigactionswidget.cpp
+@@ -19,6 +19,8 @@
+ #include "knotifyconfigelement.h"
+ 
+ #include <QStandardPaths>
++#include <QUrl>
++#include <QFile>
+ 
+ #include "knotify-config.h"
+ #if HAVE_PHONON
+@@ -33,7 +35,7 @@ KNotifyConfigActionsWidget::KNotifyConfigActionsWidget(QWidget *parent)
+     //Show sounds directory by default
+     QStringList soundDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("sounds"), QStandardPaths::LocateDirectory);
+     if (!soundDirs.isEmpty()) {
+-        m_ui.Sound_select->setStartDir(QUrl::fromLocalFile(soundDirs.last()));
++//        m_ui.Sound_select->setStartDir(QUrl::fromLocalFile(soundDirs.last()));
+     }
+ 
+     m_ui.Sound_play->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
+@@ -67,6 +69,7 @@ KNotifyConfigActionsWidget::KNotifyConfigActionsWidget(QWidget *parent)
+ void KNotifyConfigActionsWidget::setConfigElement(KNotifyConfigElement *config)
+ {
+     bool blocked = blockSignals(true); //to block the changed() signal
++
+     QString prstring = config->readEntry(QStringLiteral("Action"));
+     QStringList actions = prstring.split(QLatin1Char('|'));
+ 
+@@ -77,10 +80,11 @@ void KNotifyConfigActionsWidget::setConfigElement(KNotifyConfigElement *config)
+     m_ui.Taskbar_check->setChecked(actions.contains(QStringLiteral("Taskbar")));
+     m_ui.TTS_check->setChecked(actions.contains(QStringLiteral("TTS")));
+ 
+-    m_ui.Sound_select->setUrl(QUrl(config->readEntry(QStringLiteral("Sound"), true)));
+-    m_ui.Logfile_select->setUrl(QUrl(config->readEntry(QStringLiteral("Logfile"), true)));
+-    m_ui.Execute_select->setUrl(QUrl::fromLocalFile(config->readEntry(QStringLiteral("Execute"))));
++    m_ui.Sound_select->setText(config->readEntry(QStringLiteral("Sound"), true));
++    m_ui.Logfile_select->setText(config->readEntry(QStringLiteral("Logfile"), true));
++    m_ui.Execute_select->setText(QUrl::fromLocalFile(config->readEntry(QStringLiteral("Execute"))).path());
+     m_ui.TTS_select->setText(config->readEntry(QStringLiteral("TTS")));
++
+     if (m_ui.TTS_select->text() == QLatin1String("%e")) {
+         m_ui.TTS_combo->setCurrentIndex(1);
+     } else if (m_ui.TTS_select->text() == QLatin1String("%m") || m_ui.TTS_select->text() == QLatin1String("%s")) {
+@@ -116,8 +120,9 @@ void KNotifyConfigActionsWidget::save(KNotifyConfigElement *config)
+     config->writeEntry(QStringLiteral("Action"), actions.join(QLatin1Char('|')));
+ 
+     config->writeEntry(QStringLiteral("Sound"), m_ui.Sound_select->text());  // don't use .url() here, .notifyrc files have predefined "static" entries with no path
+-    config->writeEntry(QStringLiteral("Logfile"), m_ui.Logfile_select->url().toString());
+-    config->writeEntry(QStringLiteral("Execute"), m_ui.Execute_select->url().toLocalFile());
++    config->writeEntry(QStringLiteral("Logfile"), m_ui.Logfile_select->text());
++    config->writeEntry(QStringLiteral("Execute"), m_ui.Execute_select->text());
++
+     switch (m_ui.TTS_combo->currentIndex()) {
+     case 0:
+         config->writeEntry(QStringLiteral("TTS"), QStringLiteral("%s"));
+diff --git a/src/knotifyconfigactionswidgetbase.ui b/src/knotifyconfigactionswidgetbase.ui
+index 993eebe..bb4a799 100644
+--- a/src/knotifyconfigactionswidgetbase.ui
++++ b/src/knotifyconfigactionswidgetbase.ui
+@@ -28,7 +28,7 @@
+     </widget>
+    </item>
+    <item row="0" column="2" colspan="2" >
+-    <widget class="KUrlRequester" name="Sound_select" >
++    <widget class="QLineEdit" name="Sound_select" >
+      <property name="enabled" >
+       <bool>false</bool>
+      </property>
+@@ -58,7 +58,7 @@
+     </widget>
+    </item>
+    <item row="2" column="1" colspan="3" >
+-    <widget class="KUrlRequester" name="Logfile_select" >
++    <widget class="QLineEdit" name="Logfile_select" >
+      <property name="enabled" >
+       <bool>false</bool>
+      </property>
+@@ -85,7 +85,7 @@
+     </widget>
+    </item>
+    <item row="4" column="1" colspan="3" >
+-    <widget class="KUrlRequester" name="Execute_select" >
++    <widget class="QLineEdit" name="Execute_select" >
+      <property name="enabled" >
+       <bool>false</bool>
+      </property>
+@@ -108,7 +108,7 @@
+     </widget>
+    </item>
+    <item row="5" column="1" colspan="2" >
+-    <widget class="KComboBox" name="TTS_combo" >
++    <widget class="QComboBox" name="TTS_combo" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+        <horstretch>0</horstretch>
+@@ -136,7 +136,7 @@
+     </widget>
+    </item>
+    <item row="5" column="3" >
+-    <widget class="KLineEdit" name="TTS_select" >
++    <widget class="QLineEdit" name="TTS_select" >
+      <property name="whatsThis" >
+       <string>&lt;qt>Specifies how Jovie should speak the event when received.  If you select "Speak custom text", enter the text in the box.  You may use the following substitution strings in the text:&lt;dl>&lt;dt>%e&lt;/dt>&lt;dd>Name of the event&lt;/dd>&lt;dt>%a&lt;/dt>&lt;dd>Application that sent the event&lt;/dd>&lt;dt>%m&lt;/dt>&lt;dd>The message sent by the application&lt;/dd>&lt;/dl>&lt;/qt></string>
+      </property>
+@@ -144,19 +144,6 @@
+    </item>
+   </layout>
+  </widget>
+- <customwidgets>
+-  <customwidget>
+-   <class>KUrlRequester</class>
+-   <extends>QFrame</extends>
+-   <header>kurlrequester.h</header>
+-   <container>1</container>
+-  </customwidget>
+-  <customwidget>
+-   <class>KComboBox</class>
+-   <extends>QComboBox</extends>
+-   <header>kcombobox.h</header>
+-  </customwidget>
+- </customwidgets>
+  <resources/>
+  <connections>
+   <connection>
+diff --git a/src/knotifyconfigwidget.cpp b/src/knotifyconfigwidget.cpp
+index 1c06f91..21670cf 100644
+--- a/src/knotifyconfigwidget.cpp
++++ b/src/knotifyconfigwidget.cpp
+@@ -26,6 +26,7 @@
+ #include <QVBoxLayout>
+ #include <QDBusInterface>
+ #include <QDBusConnectionInterface>
++#include <QPushButton>
+ 
+ #include <klocalizedstring.h>
+ 
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 7e92698..548a228 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -4,7 +4,13 @@ project(knotifytest)
+ 
+ include(ECMMarkAsTest)
+ 
+-find_package(Qt5Test ${REQUIRED_QT_VERSION} REQUIRED)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
++
+ set_package_properties(Qt5Test PROPERTIES PURPOSE "Required for tests")
+ 
+ find_package(KF5ConfigWidgets ${KF5_DEP_VERSION} REQUIRED)
+diff --git a/tests/knotifytestview.ui b/tests/knotifytestview.ui
+index d9dc7d6..73194fb 100644
+--- a/tests/knotifytestview.ui
++++ b/tests/knotifytestview.ui
+@@ -33,7 +33,7 @@
+       </widget>
+      </item>
+      <item>
+-      <widget class="KComboBox" name="c_group" >
++      <widget class="QComboBox" name="c_group" >
+        <item>
+         <property name="text" >
+          <string>topLevel1</string>
+@@ -74,7 +74,7 @@
+       </widget>
+      </item>
+      <item>
+-      <widget class="KLineEdit" name="c_name" />
++      <widget class="QLineEdit" name="c_name" />
+      </item>
+     </layout>
+    </item>

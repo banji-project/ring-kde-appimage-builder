@@ -1,0 +1,137 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2dd734f6..71664c67 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -120,6 +120,8 @@ FIND_PACKAGE(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
+   PrintSupport
+   QuickControls2
+   Quick
++  Concurrent
++  X11Extras
+ )
+ 
+ #FIND_PACKAGE(Qt5TextToSpeech ${QT_MIN_VERSION} QUIET)
+@@ -145,7 +147,10 @@ FIND_PACKAGE(KF5 "${KF5_DEP_VERSION}" REQUIRED COMPONENTS
+   NotifyConfig
+   GlobalAccel
+   Declarative
+-  Kirigami2
++  #Kirigami2
++  ItemViews
++  Archive
++
+ )
+ 
+ FIND_PACKAGE(KF5 "${AKO_DEP_VERSION}" QUIET COMPONENTS
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 9d219e93..fabba6e4 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -454,7 +454,6 @@ TARGET_LINK_LIBRARIES(ring-kde
+   KF5::NotifyConfig
+   KF5::GlobalAccel
+   KF5::Declarative
+-  KF5::Kirigami2
+ )
+ 
+ IF (Qt5TextToSpeech_FOUND)
+diff --git a/src/main.cpp b/src/main.cpp
+index 25c37c77..b8c9b6e5 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -1,3 +1,23 @@
++#include <QtPlugin>
++Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
++Q_IMPORT_PLUGIN(QtQuick2Plugin)
++Q_IMPORT_PLUGIN(QtQuickControls1Plugin)
++Q_IMPORT_PLUGIN(QtQuickControls2Plugin)
++Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
++Q_IMPORT_PLUGIN(QEvdevKeyboardPlugin)
++Q_IMPORT_PLUGIN(QEvdevMousePlugin)
++Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)
++Q_IMPORT_PLUGIN(QtQuickTemplates2Plugin)
++Q_IMPORT_PLUGIN(QJpegPlugin)
++//Q_IMPORT_PLUGIN(QJpegPlugin)
++Q_IMPORT_PLUGIN(QSvgPlugin)
++Q_IMPORT_PLUGIN(QSvgIconPlugin)
++Q_IMPORT_PLUGIN(QXcbGlxIntegrationPlugin)
++Q_IMPORT_PLUGIN(QtGraphicalEffectsPlugin)
++Q_IMPORT_PLUGIN(QtGraphicalEffectsPrivatePlugin)
++Q_IMPORT_PLUGIN(QtQmlModelsPlugin)
++Q_IMPORT_PLUGIN(KirigamiPlugin)
++Q_IMPORT_PLUGIN(QQc2DesktopStylePlugin)
+ /***************************************************************************
+  *   Copyright (C) 2009-2015 by Savoir-Faire Linux                         *
+  *   Author : Jérémy Quentin <jeremy.quentin@savoirfairelinux.com>         *
+@@ -26,6 +46,11 @@
+ #include <KDBusService>
+ #include <KAboutData>
+ #include <KLocalizedString>
++#include <KColorScheme>
++#include <kconfigskeleton.h>
++
++#include<KConfigGui>
++#include<KConfigLoader>
+ 
+ //Ring
+ #include "ringapplication.h"
+@@ -34,6 +59,7 @@
+ #include <QQmlDebuggingEnabler>
+ 
+ #include <QQmlExtensionPlugin>
++#include <QQuickStyle>
+ 
+ #ifdef KQUICKITEMVIEWS_USE_STATIC_PLUGIN
+ Q_IMPORT_PLUGIN(KQuickItemViews)
+@@ -57,6 +83,17 @@ int main(int argc, char **argv)
+ 
+       KLocalizedString::setApplicationDomain("ring-kde");
+ 
++qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_KirigamiPlugin().instance())->registerTypes("org.kde.kirigami");
++qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QQc2DesktopStylePlugin().instance())->registerTypes("org.kde.desktop.private");
++QQuickStyle::setStyle(":/org.kde.desktop");
++
++QColor col;
++qDebug() << "KConfigGUI" << KConfigGui::DummyBobClass::bobcatlol << ConfigurationSkeleton::displayBookmarkDock();
++qDebug() << qgetenv("KDE_COLOR_SCHEME_PATH");
++
++      app.setPalette(KColorScheme::createApplicationPalette(KSharedConfig::openConfig("Breeze Dark")));
++
++
+       //FIXME remove
+ #ifdef KQUICKITEMVIEWS_USE_STATIC_PLUGIN
+       qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_KQuickItemViews().instance())->registerTypes("org.kde.playground.kquickitemviews");
+@@ -103,6 +140,7 @@ int main(int argc, char **argv)
+ #endif
+ 
+       //The app will have quitted by now if an instance already exist
++      qDebug() << "\n\nCALL NEW INSTANCE";
+       app.newInstance();
+ 
+       const int retVal = app.exec();
+diff --git a/src/ringapplication.cpp b/src/ringapplication.cpp
+index 8029c88e..03650d49 100644
+--- a/src/ringapplication.cpp
++++ b/src/ringapplication.cpp
+@@ -616,6 +616,8 @@ QQuickWindow* RingApplication::desktopWindow() const
+ 
+          auto obj2 = component.create();
+ 
++qDebug() << "New error" << component.errorString() << obj2;
++
+          // I have *no* clue why this is needed... A race somewhere
+          while (component.errorString().isEmpty() && !obj2)
+             obj2 = component.create();
+diff --git a/src/timeline/CMakeLists.txt b/src/timeline/CMakeLists.txt
+index 70d8cd95..a89bf7d6 100644
+--- a/src/timeline/CMakeLists.txt
++++ b/src/timeline/CMakeLists.txt
+@@ -78,7 +78,7 @@ target_link_libraries( libtimeline
+    KF5::WidgetsAddons
+    KF5::ConfigCore
+    KF5::ConfigGui
+-   KF5::Kirigami2
++   #KF5::Kirigami2
+ )
+ 
+ SET( libtimeline_LIB_HDRS

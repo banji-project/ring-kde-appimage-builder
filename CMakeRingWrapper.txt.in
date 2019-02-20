@@ -1,0 +1,166 @@
+#CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+
+PROJECT(dummy)
+
+SET(QT_MIN_VERSION  "5.7.0")
+set(CMAKE_BUILD_TYPE RELEASE)
+
+set(DISABLE_EXPORT ON)
+
+# Necessary for LTO
+set(CMAKE_AR "/usr/bin/gcc-ar")
+set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+set(CMAKE_CXX_ARCHIVE_FINISH true)
+
+ADD_DEFINITIONS(-DQT_STATIC)
+#    bash -c "'gcc -v 2>&1 | grep Target | cut -f2 -d\' \''"
+
+# HACK
+execute_process(COMMAND
+    bash -c "gcc -v 2>&1 | grep Target | cut -f2 -d\' \'"
+    OUTPUT_VARIABLE NATIVE_TARGET_NAME
+RESULT_VARIABLE FFFF
+)
+
+# The parent script will add many paths here
+@ALL_KF5_DIR@
+
+# Try to force CMAKE not to overrride my will
+SET(CMAKE_CXX_FLAGS "-Os -fPIC -flto=8 -ffunction-sections -fdata-sections \
+ -fvisibility=hidden -fvisibility-inlines-hidden -Wl,--gc-sections \
+ -Wl,--strip-all -Wl,--exclude-libs\
+ -Wl,--as-needed\
+")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
+
+# -Wl,--as-needed
+
+set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -Wl,-s,-z,-flto=8\
+ -Wl,--gc-sections -Wl,--strip-all -Wl,--exclude-libs\
+ -Wl,--as-needed\
+")
+
+# Force some extra static libs
+
+#QTBUG-38913
+# All static linking elements have to be added "by force" as the package
+# provides an incomplete list.
+set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a \
+ /opt/usr/lib/libxcb-static.a \
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a \
+  -lGL -lGLU  @EXTRA_LD@"
+)
+
+
+ADD_DEFINITIONS(-DQT_STATICPLUGIN)
+
+# Without any plugin, everything will compile, but wont run. `qmake` does
+# tons of strange magic to make it work. I used
+#
+# for FILE in `find /opt/usr/ -type f -iname '*.a'`; do
+#     nm -gC $FILE | grep -in $NAME > /dev/null && echo $FILE
+# done
+#
+# To find all the missing plugin symbols
+
+set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \
+ ${CMAKE_BINARY_DIR}/libqt5pluginenabler.a \
+/ring-daemon/contrib/native/speex/libspeex/.libs/libspeex.a \
+/ring-daemon/contrib/native/opus/.libs/libopus.a \
+-I /ring-daemon/src/ -I/ring-daemon/src/dring/ -flto=8  -L/ring-daemon/contrib/x86_64-pc-linux-gnu/lib -L/ring-daemon/contrib/x86_64-pc-linux-gnu/lib/ -lpjsua2-x86_64-pc-linux-gnu -lpjsua-x86_64-pc-linux-gnu -lpjsip-ua-x86_64-pc-linux-gnu -lpjsip-simple-x86_64-pc-linux-gnu -lpjsip-x86_64-pc-linux-gnu -lpjmedia-codec-x86_64-pc-linux-gnu -lpjmedia-videodev-x86_64-pc-linux-gnu -lpjmedia-audiodev-x86_64-pc-linux-gnu -lpjmedia-x86_64-pc-linux-gnu -lpjnath-x86_64-pc-linux-gnu -lpjlib-util-x86_64-pc-linux-gnu -lsrtp-x86_64-pc-linux-gnu -lpj-x86_64-pc-linux-gnu /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libuuid.a -lasound -lyaml-cpp /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libupnp.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libthreadutil.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libixml.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libopendht.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libsecp256k1.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libpcre.a -lavfilter -lswresample /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libspeexdsp.a -ldl -lavdevice -lxcb -lxcb-shm -lxcb-shape -lxcb-xfixes -lavformat -lbz2 -lavcodec -lvpx /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libopus.a /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libspeex.a -lx264 -lswscale -lavutil -ludev -lnatpmp -lcrypto /ring-daemon/contrib/native/opendht/src/.libs/libopendht.a -lpthread -largon2 -ljsoncpp  -lrt /ring-daemon/contrib/x86_64-pc-linux-gnu/lib/libgmp.a -lhogweed -lz -lnettle -lrestbed /ring-daemon/contrib/native/opus/.libs/libopus.a /ring-daemon/contrib/native/upnp/upnp/.libs/libupnp.a /ring-daemon/contrib/native/upnp/threadutil/.libs/libthreadutil.a /ring-daemon/contrib/native/upnp/ixml/.libs/libixml.a /ring-daemon/contrib/native/uuid/.libs/libuuid.a /ring-daemon/contrib/native/speex/libspeex/.libs/libspeex.a /usr/lib/libXi.a /usr/lib/libXext.a -lm -pthread \
+-lgnutls \
+-lgmp \
+/usr/lib64/libxcb-keysyms.a \
+/usr/lib64/libidn2.a \
+/usr/bin/libssl.a"
+)
+
+set(CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE} \
+ /opt/usr/lib/libqtfreetype.a /opt/usr/lib/libqtharfbuzz.a \
+ /opt/usr/lib/libqtlibpng.a /opt/usr/lib/libqtpcre2.a \
+ /opt/usr/lib/libxcb-static.a \
+ /opt/usr/lib/libQt5XcbQpa.a \
+  -lGL -lGLU  @EXTRA_LD@"
+)
+
+# Make sure KF5 subdirectory see each others
+
+set(BUILD_WITH_QTSCRIPT OFF)
+option(BUILD_WITH_QTSCRIPT OFF)
+
+# Fetch ring-kde and libringqt
+
+
+if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde)
+    execute_process(COMMAND
+        git clone https://anongit.kde.org/ring-kde --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/
+    )
+else()
+#    execute_process(COMMAND
+#        /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/ && git fetch origin && git reset --hard origin/master"
+#    )
+endif()
+
+if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libringqt)
+    execute_process(COMMAND
+         git clone https://github.com/elv13/libringqt --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libringqt/
+    )
+else()
+ #   execute_process(COMMAND
+  #      /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libringqt/ && git fetch origin && git reset --hard origin/master"
+   # )
+endif()
+
+if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libkquickitemviews)
+    execute_process(COMMAND
+         git clone https://github.com/KDE/kquickitemviews --branch master ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libkquickitemviews/
+    )
+else()
+ #   execute_process(COMMAND
+  #      /bin/sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/libringqt/ && git fetch origin && git reset --hard origin/master"
+   # )
+endif()
+
+# Bundle the icons
+
+execute_process(COMMAND
+    ${CMAKE_SOURCE_DIR}/geticons.sh ${CMAKE_CURRENT_SOURCE_DIR}/ring-kde/  /breeze-icons/icons/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+)
+
+execute_process(COMMAND
+    cmake .. -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/iconbundle/install -Wno-dev -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/iconbundle/build/
+    RESULT_VARIABLE CMAKE_CMD_RES
+)
+
+execute_process(COMMAND
+    make
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/iconbundle/build/
+    RESULT_VARIABLE MAKE_CMD_RES
+)
+
+if (NOT ${CMAKE_CMD_RES} MATCHES 0)
+#    message(FATAL_ERROR "Bundling icons failed" ${CMAKE_CURRENT_BINARY_DIR}/)
+endif()
+
+if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/iconbundle/build/libiconbundle.a)
+#    message(FATAL_ERROR "Bundling icons failed"  ${CMAKE_CURRENT_BINARY_DIR}/iconbundle/build/libiconbundle.a)
+else()
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/iconbundle/build/)
+  #  set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} \ 
+  #       ${CMAKE_CURRENT_BINARY_DIR}/iconbundle/build/libiconbundle.a"
+  #  )
+endif()
+
+# Now, setup both project to use the static mode
+set(ENABLE_STATIC true)
+set(ENABLE_LIBWRAP true)
+set(RING_BUILD_DIR /ring-daemon/src/)
+set(DISABLE_KDBUS_SERVICE true)
+#set(CMAKE_INSTALL_PREFIX ring-kde.AppDir)
+
+#add_subdirectory(kstyle)
+add_subdirectory(ring-kde)
+

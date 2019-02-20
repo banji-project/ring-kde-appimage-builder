@@ -1,0 +1,58 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4a2945e..44d9b1b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,11 +1,11 @@
+ cmake_minimum_required(VERSION 3.5)
+ 
+-set(KF5_VERSION "5.56.0") # handled by release scripts
+-set(KF5_DEP_VERSION "5.55.0") # handled by release scripts
++set(KF5_VERSION "5.39.0") # handled by release scripts
++set(KF5_DEP_VERSION "5.39.0") # handled by release scripts
+ 
+ project(kirigami2 VERSION ${KF5_VERSION})
+ 
+-set(REQUIRED_QT_VERSION 5.10.0)
++set(REQUIRED_QT_VERSION 5.9.0)
+ 
+ SET(CMAKE_CXX_STANDARD 11)
+ 
+@@ -52,7 +52,7 @@ endif(STATIC_LIBRARY)
+ 
+ ################# set KDE specific information #################
+ 
+-find_package(ECM 5.55.0 NO_MODULE)
++find_package(ECM 5.39.0 NO_MODULE)
+ set_package_properties(ECM PROPERTIES TYPE REQUIRED DESCRIPTION "Extra CMake Modules." URL "https://projects.kde.org/projects/kdesupport/extra-cmake-modules")
+ 
+ # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
+diff --git a/src/libkirigami/tabletmodewatcher.cpp b/src/libkirigami/tabletmodewatcher.cpp
+index 2d228eb..e5982e4 100644
+--- a/src/libkirigami/tabletmodewatcher.cpp
++++ b/src/libkirigami/tabletmodewatcher.cpp
+@@ -60,25 +60,8 @@ public:
+                 QString::fromLatin1(qgetenv("KDE_KIRIGAMI_TABLET_MODE")) == QStringLiteral("true"));
+             isTabletModeAvailable = isTabletMode;
+         } else {
+-            m_interface = new OrgKdeKWinTabletModeManagerInterface(QStringLiteral("org.kde.KWin"), QStringLiteral("/org/kde/KWin"), QDBusConnection::sessionBus(), q);
+-
+-            if (m_interface->isValid()) {
+-                //NOTE: the initial call is actually sync, because is better a tiny freeze than having the ui always recalculated and changed at the start
+-                isTabletModeAvailable = m_interface->tabletModeAvailable();
+-                isTabletMode = m_interface->tabletMode();
+-                QObject::connect(m_interface, &OrgKdeKWinTabletModeManagerInterface::tabletModeChanged,
+-                        q, [this](bool tabletMode) {
+-                    setIsTablet(tabletMode);
+-                });
+-                QObject::connect(m_interface, &OrgKdeKWinTabletModeManagerInterface::tabletModeAvailableChanged,
+-                        q, [this](bool avail) {
+-                    isTabletModeAvailable = avail;
+-                    emit q->tabletModeAvailableChanged(avail);
+-                });
+-            } else {
+                 isTabletModeAvailable = false;
+                 isTabletMode = false;
+-            }
+         }
+ //TODO: case for Windows
+ #else

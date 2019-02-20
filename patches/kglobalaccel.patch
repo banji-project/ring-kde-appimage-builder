@@ -1,0 +1,52 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 72d9522..897bb46 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -56,12 +56,9 @@ if (NOT APPLE)
+     find_package(X11)
+ endif()
+ 
+-set(HAVE_X11 0)
++set(HAVE_X11 1)
+ 
+-if(X11_FOUND AND XCB_XCB_FOUND)
+-    set(HAVE_X11 1)
+     find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED X11Extras)
+-endif()
+ 
+ # Subdirectories
+ if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/po")
+diff --git a/autotests/CMakeLists.txt b/autotests/CMakeLists.txt
+index 1221837..21f5cd7 100644
+--- a/autotests/CMakeLists.txt
++++ b/autotests/CMakeLists.txt
+@@ -1,4 +1,9 @@
+-find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Test)
++find_package(Qt5Test ${REQUIRED_QT_VERSION} CONFIG QUIET)
++
++if(NOT Qt5Test_FOUND)
++    message(STATUS "Qt5Test not found, autotests will not be built.")
++    return()
++endif()
+ 
+ remove_definitions(-DQT_NO_CAST_FROM_BYTEARRAY)
+ remove_definitions(-DQT_NO_CAST_FROM_ASCII)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 524bedc..1584b6d 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -27,14 +27,8 @@ target_link_libraries(KF5GlobalAccel
+ PUBLIC
+     Qt5::DBus
+     Qt5::Widgets
+-)
+-
+-if(HAVE_X11)
+-    target_link_libraries(KF5GlobalAccel
+-    PRIVATE
+         Qt5::X11Extras
+     )
+-endif()
+ 
+ set_target_properties(KF5GlobalAccel PROPERTIES VERSION   ${KGLOBALACCEL_VERSION_STRING}
+                                                 SOVERSION ${KGLOBALACCEL_SOVERSION}
