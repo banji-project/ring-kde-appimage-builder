@@ -25,14 +25,18 @@ RUN echo net-misc/openssh -static >> /etc/portage/package.use
 
 RUN cat /etc/portage/make.conf
 
-RUN echo '<=sys-devel/gcc-8' >> /etc/portage/package.unmask
-RUN echo '<=sys-devel/gcc-8 **' >> /etc/portage/package.keywords
+RUN echo '<=sys-devel/gcc-9' >> /etc/portage/package.unmask
+RUN echo '<=sys-devel/gcc-9 **' >> /etc/portage/package.keywords
 
 RUN emerge gcc
 RUN binutils-config --linker ld.gold
 RUN gcc-config `gcc-config -l | wc -l`
 
-RUN USE="-xattr -rsync-verify" emerge portage
+RUN PYTHON_SINGLE_TARGET="python3_2" USE="-xattr -rsync-verify" emerge portage
+
+RUN emerge binutils && \
+    emerge -C '=sys-devel/binutils-2.23*' '=sys-devel/binutils-2.28*'
+RUN USE="static-libs X xkb" emerge x11-libs/libxkbcommon x11-libs/libxcb
 
 #RUN emerge -e @world --update || echo Failed, but keep going
 
@@ -55,41 +59,43 @@ RUN emerge -e @world || echo 'Failed, but keep going (self host)'
 RUN cat /etc/portage/make.conf
 
 # Download Qt in order to build a minimal library
-RUN wget http://qt.mirrors.tds.net/qt/archive/qt/5.9/5.9.5/single/qt-everywhere-opensource-src-5.9.5.tar.xz 
-RUN tar -xpvf qt-everywhere-opensource-src-5.9.5.tar.xz
+RUN wget https://download.qt.io/archive/qt/5.12/5.12.1/single/qt-everywhere-src-5.12.1.tar.xz
+RUN tar -xpvf qt-everywhere-src-5.12.1.tar.xz
 
 # Qt5 needs the Gl API
 RUN emerge mesa freeglut dev-python/common
 
 # Replace the default performance Qt flags for portability ones
-RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/common/qcc-base.conf
-RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/common/qcc-base.conf
-RUN sed 's/-O3/-Os/' -i /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/common/gcc-base.conf
-RUN sed 's/-O2/-Os/' -i /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/common/gcc-base.conf
-RUN echo 'QMAKE_CXXFLAGS -=-O3' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O3' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS -=-O2' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O2' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS=-Os' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
-RUN echo 'QMAKE_CXXFLAGS_RELEASE=-Os' >> /qt-everywhere-opensource-src-5.9.5/qtbase/mkspecs/linux-g++/qmake.conf
-RUN find /qt-everywhere-opensource-src-5.9.5/ | xargs grep O3 2> /dev/null \
+RUN sed 's/-O3/-Os/' -i /qt-everywhere-src-5.12.1/qtbase/mkspecs/common/qcc-base.conf
+RUN sed 's/-O2/-Os/' -i /qt-everywhere-src-5.12.1/qtbase/mkspecs/common/qcc-base.conf
+RUN sed 's/-O3/-Os/' -i /qt-everywhere-src-5.12.1/qtbase/mkspecs/common/gcc-base.conf
+RUN sed 's/-O2/-Os/' -i /qt-everywhere-src-5.12.1/qtbase/mkspecs/common/gcc-base.conf
+RUN echo 'QMAKE_CXXFLAGS -=-O3' >> /qt-everywhere-src-5.12.1/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O3' >> /qt-everywhere-src-5.12.1/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS -=-O2' >> /qt-everywhere-src-5.12.1/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE -=-O2' >> /qt-everywhere-src-5.12.1/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS=-Os' >> /qt-everywhere-src-5.12.1/qtbase/mkspecs/linux-g++/qmake.conf
+RUN echo 'QMAKE_CXXFLAGS_RELEASE=-Os' >> /qt-everywhere-src-5.12.1/qtbase/mkspecs/linux-g++/qmake.conf
+RUN find /qt-everywhere-src-5.12.1/ | xargs grep O3 2> /dev/null \
  | grep -v xml | grep -v Binary 2> /dev/null | cut -f1 -d ':' \
  | grep -E '\.(conf|mk|sh|am|in)$' | xargs sed -i 's/O3/Os/'
 
 # Build a static Qt package with as little system dependencies as
 # possible
-RUN cd qt-everywhere-opensource-src-5.9.5 &&\
+RUN cd qt-everywhere-src-5.12.1 &&\
   ./configure -v -release -opensource -confirm-license -reduce-exports -ssl \
-   -qt-xcb -qt-xkbcommon -feature-accessibility -opengl desktop  -static -nomake examples \
+   -xcb -xkbcommon -feature-accessibility -opengl desktop  -static -nomake examples \
    -nomake tests -skip qtwebengine -skip qtscript -skip qt3d -skip qtandroidextras \
    -skip qtwebview -skip qtwebsockets -skip qtdoc -skip qtcharts \
    -skip qtdatavis3d -skip qtgamepad -skip qtmultimedia -skip qtsensors \
    -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwayland \
    -prefix /opt/usr -no-glib -qt-zlib -qt-freetype -ltcg -optimize-size
 
+
+
 # Build Qt, this is long
-RUN cd qt-everywhere-opensource-src-5.9.5 && make -j8
-RUN cd qt-everywhere-opensource-src-5.9.5 && make install
+RUN cd qt-everywhere-src-5.12.1 && make -j8
+RUN cd qt-everywhere-src-5.12.1 && make install
 RUN rm -rf qt-e # Keep the docker image smaller
 
 # Not very clean, but running tests in this environment hits a lot of
@@ -109,7 +115,7 @@ RUN QT_INSTALL_PREFIX=/opt/usr/
 # libxcb-image0-dev libxcb-xinerama0-dev flex bison -y
 RUN USE="-gpg -pcre -perl -python -threads -webdav -pcre-jit" emerge gperf gettext \
  flex bison x11-libs/xcb-util-keysyms dev-vcs/git yasm \
- media-libs/alsa-lib
+ media-libs/alsa-lib net-dns/libidn2 nettle
 
 RUN git clone https://anongit.kde.org/extra-cmake-modules
 RUN cd extra-cmake-modules && mkdir build && cd build && cmake .. \
@@ -206,20 +212,13 @@ RUN cd /bootstrap/build && CXXFLAGS="" LDFLAGS="" cmake .. -DCMAKE_INSTALL_PREFI
 RUN sed -i 's/5\.[0-9][0-9]/5\.39/' /bootstrap/build/kirigami/kirigami/CMakeLists.txt
 RUN sed -i 's/5\.[0-9][0-9]/5\.39/' /bootstrap/build/qqc2-desktop-style/qqc2-desktop-style/CMakeLists.txt
 RUN cd /bootstrap/build && CXXFLAGS="" LDFLAGS="" cmake .. -DCMAKE_INSTALL_PREFIX=/opt/ring-kde.AppDir\
- -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 \
+ -DCMAKE_BUILD_TYPE=Release -DDISABLE_KDBUS_SERVICE=1 -DUSE_STATIC_QT=ON\
  -DRING_BUILD_DIR=/ring-daemon/src/ -Dring_BIN=/ring-daemon/src/.libs/libring.a -Wno-dev || echo Ignore
 
 
 # Add the appimages
 RUN wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
 RUN chmod a+x appimagetool-x86_64.AppImage
-
-# FIXME
-#RUN mkdir /opt/ring-kde.AppDir/lib/
-#RUN cp /lib/libpcre.so.1 /opt/ring-kde.AppDir/lib/
-#RUN cp /usr/lib/libasound.so.2 /opt/ring-kde.AppDir/lib/
-
-RUN cd /bootstrap/build/ring-kde/ring-kde/ && git apply /bootstrap/patches/ring-kde.patch
 
 # Enable LTO for some ring dependencies
 ENV LDFLAGS="-static-libstdc++ -fuse-linker-plugin -Wl,--gc-sections -Wl,--strip-all -Wl,--as-needed -Wl,-flto=8"
@@ -234,9 +233,6 @@ RUN cd /ring-daemon/contrib/native/ && make -j8
 ADD fonts /fonts
 RUN mkdir /opt/ring-kde.AppDir/fonts
 ADD fonts/* /opt/ring-kde.AppDir/fonts/
-
-# TODO: Fix it (Gentoo call it differently)
-#RUN cp /lib/x86_64-linux-gnu/libpcre.so.3 /opt/ring-kde.AppDir/lib/
 
 # Fuse doesn't link with gold
 RUN LDFLAGS="$LDFLAGS -Wl,-fuse-ld=bfd" emerge sys-fs/fuse

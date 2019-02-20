@@ -1,49 +1,58 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7164ce1..54cb401 100644
+index 4a2945e..44d9b1b 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,7 +1,7 @@
- cmake_minimum_required(VERSION 3.0)
+@@ -1,11 +1,11 @@
+ cmake_minimum_required(VERSION 3.5)
  
--set(KF5_VERSION "5.45.0") # handled by release scripts
--set(KF5_DEP_VERSION "5.45.0") # handled by release scripts
+-set(KF5_VERSION "5.56.0") # handled by release scripts
+-set(KF5_DEP_VERSION "5.55.0") # handled by release scripts
 +set(KF5_VERSION "5.39.0") # handled by release scripts
 +set(KF5_DEP_VERSION "5.39.0") # handled by release scripts
  
  project(kirigami2 VERSION ${KF5_VERSION})
  
-@@ -47,7 +47,7 @@ endif(STATIC_LIBRARY)
+-set(REQUIRED_QT_VERSION 5.10.0)
++set(REQUIRED_QT_VERSION 5.9.0)
+ 
+ SET(CMAKE_CXX_STANDARD 11)
+ 
+@@ -52,7 +52,7 @@ endif(STATIC_LIBRARY)
  
  ################# set KDE specific information #################
  
--find_package(ECM 5.45.0 NO_MODULE)
+-find_package(ECM 5.55.0 NO_MODULE)
 +find_package(ECM 5.39.0 NO_MODULE)
  set_package_properties(ECM PROPERTIES TYPE REQUIRED DESCRIPTION "Extra CMake Modules." URL "https://projects.kde.org/projects/kdesupport/extra-cmake-modules")
  
  # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-diff --git a/kirigami.qrc b/kirigami.qrc
-index 782cc19..2af98dd 100644
---- a/kirigami.qrc
-+++ b/kirigami.qrc
-@@ -39,6 +39,7 @@
-         <file alias="templates/private/ScrollView.qml">src/controls/templates/private/ScrollView.qml</file>
-         <file alias="templates/private/BackButton.qml">src/controls/templates/private/BackButton.qml</file>
-         <file alias="templates/private/ForwardButton.qml">src/controls/templates/private/ForwardButton.qml</file>
-+        <file alias="templates/private/IconPropertiesGroup.qml">src/controls/templates/private/IconPropertiesGroup.qml</file>
-         <file alias="templates/OverlayDrawer.qml">src/controls/templates/OverlayDrawer.qml</file>
-         <file alias="templates/OverlaySheet.qml">src/controls/templates/OverlaySheet.qml</file>
-         <file alias="templates/SwipeListItem.qml">src/controls/templates/SwipeListItem.qml</file>
-diff --git a/src/controls/templates/OverlayDrawer.qml b/src/controls/templates/OverlayDrawer.qml
-index 4e1d99a..2dbe809 100644
---- a/src/controls/templates/OverlayDrawer.qml
-+++ b/src/controls/templates/OverlayDrawer.qml
-@@ -318,7 +318,8 @@ T2.Drawer {
-             root.enter.enabled = false;
-             root.exit.enabled = false;
+diff --git a/src/libkirigami/tabletmodewatcher.cpp b/src/libkirigami/tabletmodewatcher.cpp
+index 2d228eb..e5982e4 100644
+--- a/src/libkirigami/tabletmodewatcher.cpp
++++ b/src/libkirigami/tabletmodewatcher.cpp
+@@ -60,25 +60,8 @@ public:
+                 QString::fromLatin1(qgetenv("KDE_KIRIGAMI_TABLET_MODE")) == QStringLiteral("true"));
+             isTabletModeAvailable = isTabletMode;
          } else {
--            positionResetAnim.to = position > 0.5 ? 1 : 0;
-+           drawerOpen = position > 0.5 ? 1 : 0;
-+            positionResetAnim.to = drawerOpen;
-             positionResetAnim.running = true
-             root.enter.enabled = true;
-             root.exit.enabled = true;
+-            m_interface = new OrgKdeKWinTabletModeManagerInterface(QStringLiteral("org.kde.KWin"), QStringLiteral("/org/kde/KWin"), QDBusConnection::sessionBus(), q);
+-
+-            if (m_interface->isValid()) {
+-                //NOTE: the initial call is actually sync, because is better a tiny freeze than having the ui always recalculated and changed at the start
+-                isTabletModeAvailable = m_interface->tabletModeAvailable();
+-                isTabletMode = m_interface->tabletMode();
+-                QObject::connect(m_interface, &OrgKdeKWinTabletModeManagerInterface::tabletModeChanged,
+-                        q, [this](bool tabletMode) {
+-                    setIsTablet(tabletMode);
+-                });
+-                QObject::connect(m_interface, &OrgKdeKWinTabletModeManagerInterface::tabletModeAvailableChanged,
+-                        q, [this](bool avail) {
+-                    isTabletModeAvailable = avail;
+-                    emit q->tabletModeAvailableChanged(avail);
+-                });
+-            } else {
+                 isTabletModeAvailable = false;
+                 isTabletMode = false;
+-            }
+         }
+ //TODO: case for Windows
+ #else
